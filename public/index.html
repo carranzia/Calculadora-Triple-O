@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -257,17 +257,17 @@
         <div>
           <label for="transporte1">Medio de transporte</label>
           <select id="transporte1">
-  <option value="petrol">Car – Petrol/Diesel</option>
-  <option value="hybrid">Car – Hybrid</option>
-  <option value="plugin">Car – Plug-in Hybrid</option>
-  <option value="electric">Car – Electric</option>
-  <option value="shared">Car – Shared ride (2+)</option>
-  <option value="avion">Plane</option>
-  <option value="tren">Train</option>
-  <option value="bus">Bus</option>
-  <option value="metro">Metro / Tram</option>
-  <option value="caminando">Walk / Bike</option>
-</select>
+            <option value="petrol">Car – Petrol/Diesel</option>
+            <option value="hybrid">Car – Hybrid</option>
+            <option value="plugin">Car – Plug-in Hybrid</option>
+            <option value="electric">Car – Electric</option>
+            <option value="shared">Car – Shared ride (2+)</option>
+            <option value="avion">Plane</option>
+            <option value="tren">Train</option>
+            <option value="bus">Bus</option>
+            <option value="metro">Metro / Tram</option>
+            <option value="caminando">Walk / Bike</option>
+          </select>
         </div>
         <div>
           <label for="idaVuelta">Tipo de trayecto</label>
@@ -349,17 +349,16 @@
   <script>
     const emissionFactors = {
       mainTransport: {
-  petrol: 0.21,
-  hybrid: 0.15,
-  plugin: 0.10,
-  electric: 0.05,
-  shared: 0.11,
-  avion: 0.25,
-  tren: 0.04,
-  bus: 0.05,
-  metro: 0.03,
-  caminando: 0
-},
+        petrol: 0.21,
+        hybrid: 0.15,
+        plugin: 0.10,
+        electric: 0.05,
+        shared: 0.11,
+        avion: 0.25,
+        tren: 0.04,
+        bus: 0.05,
+        metro: 0.03,
+        caminando: 0
       },
       accommodation: {
         "hotel-3": 15,
@@ -373,6 +372,19 @@
         caminando: 0,
         "transporte-evento": 0.05
       }
+    };
+
+    const transportLabels = {
+      petrol: "Car – Petrol/Diesel",
+      hybrid: "Car – Hybrid",
+      plugin: "Car – Plug-in Hybrid",
+      electric: "Car – Electric",
+      shared: "Car – Shared ride (2+)",
+      avion: "Plane",
+      tren: "Train",
+      bus: "Bus",
+      metro: "Metro / Tram",
+      caminando: "Walk / Bike"
     };
 
     const footprint = {
@@ -589,11 +601,11 @@
     }
 
     function getRouteProfile(transport) {
-  if (["petrol", "hybrid", "plugin", "electric", "shared", "bus", "tren", "metro"].includes(transport)) {
-    return "driving-car";
-  }
-  return "driving-car";
-}
+      if (["petrol", "hybrid", "plugin", "electric", "shared", "bus", "tren", "metro"].includes(transport)) {
+        return "driving-car";
+      }
+      return "driving-car";
+    }
 
     async function calculateCurrentLeg() {
       try {
@@ -656,6 +668,7 @@
           originLabel: selectedOrigin.label,
           destinationLabel: selectedDestination.label,
           transport,
+          transportLabel: transportLabels[transport] || transport,
           tripType,
           calculationType,
           distanceOneWayKm: roundTo2(oneWayDistance),
@@ -668,7 +681,7 @@
           <div><strong>Tramo:</strong> ${currentLegDraft.name}</div>
           <div><strong>Origen:</strong> ${currentLegDraft.originLabel}</div>
           <div><strong>Destino:</strong> ${currentLegDraft.destinationLabel}</div>
-          <div><strong>Medio:</strong> ${transport}</div>
+          <div><strong>Medio:</strong> ${currentLegDraft.transportLabel}</div>
           <div><strong>Tipo de cálculo:</strong> ${currentLegDraft.calculationType}</div>
           <div><strong>Distancia ida:</strong> ${currentLegDraft.distanceOneWayKm} km</div>
           <div><strong>Distancia aplicada:</strong> ${currentLegDraft.distanceFinalKm} km</div>
@@ -732,7 +745,7 @@
         <div class="trip-item">
           <strong>Tramo ${index + 1}: ${leg.name}</strong><br>
           ${leg.originLabel} → ${leg.destinationLabel}<br>
-          Medio: ${leg.transport}<br>
+          Medio: ${leg.transportLabel}<br>
           Tipo: ${leg.tripType === "ida-vuelta" ? "Ida y vuelta" : "Solo ida"}<br>
           Distancia aplicada: ${leg.distanceFinalKm} km<br>
           Emisiones: ${leg.emissionsKg} kg CO₂e
@@ -820,7 +833,7 @@
         <div style="margin-bottom:12px;">
           <strong>Tramo ${index + 1}: ${leg.name}</strong><br>
           ${leg.originLabel} → ${leg.destinationLabel}<br>
-          Medio: ${leg.transport}<br>
+          Medio: ${leg.transportLabel}<br>
           Distancia aplicada: ${leg.distanceFinalKm} km<br>
           Emisiones: ${leg.emissionsKg} kg CO₂e
         </div>

@@ -1,21 +1,24 @@
-const path = require("path");
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
-const path = require("path");
 app.use(express.static(path.join(__dirname, "public")));
+
+const PORT = process.env.PORT || 3000;
+const ORS_API_KEY = process.env.ORS_API_KEY;
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-const PORT = process.env.PORT || 3000;
-const ORS_API_KEY = process.env.ORS_API_KEY;
+app.get("/test", (req, res) => {
+  res.json({ status: "server running" });
+});
 
 app.get("/api/geocode", async (req, res) => {
   try {
@@ -45,6 +48,10 @@ app.post("/api/route", async (req, res) => {
   try {
     const { profile, coordinates } = req.body;
 
+    if (!profile || !coordinates || !Array.isArray(coordinates) || coordinates.length !== 2) {
+      return res.status(400).json({ error: "Invalid route payload" });
+    }
+
     const url = `https://api.openrouteservice.org/v2/directions/${profile}/geojson`;
 
     const response = await fetch(url, {
@@ -58,8 +65,11 @@ app.post("/api/route", async (req, res) => {
 
     const data = await response.json();
 
-    res.json(data);
+    if (!response.ok) {
+      return res.status(response.status).json(data);
+    }
 
+    res.json(data);
   } catch (error) {
     console.error("Route error:", error);
     res.status(500).json({ error: "Route request failed" });
@@ -68,5 +78,4 @@ app.post("/api/route", async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
-
 });

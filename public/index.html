@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Calculadora Huella de Carbono - Triple O</title>
+  <title>Triple-O Carbon Footprint Calculator</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -16,14 +16,6 @@
       padding: 20px;
       background: #f0f8f0;
       color: #1f1f1f;
-    }
-
-    .logo {
-      text-align: center;
-      font-size: 28px;
-      font-weight: bold;
-      color: #006400;
-      margin-bottom: 20px;
     }
 
     .step {
@@ -51,6 +43,10 @@
       margin-bottom: 6px;
     }
 
+    input, select, button {
+      font-size: 16px;
+    }
+
     input, select {
       width: 100%;
       padding: 10px;
@@ -58,7 +54,6 @@
       box-sizing: border-box;
       border: 1px solid #cfd8cf;
       border-radius: 8px;
-      font-size: 16px;
     }
 
     button {
@@ -67,7 +62,6 @@
       padding: 14px;
       border: none;
       width: 100%;
-      font-size: 17px;
       cursor: pointer;
       border-radius: 8px;
       margin-top: 10px;
@@ -91,6 +85,38 @@
 
     .danger-btn:hover {
       background: #912018;
+    }
+
+    .outline-btn {
+      background: white;
+      color: #166534;
+      border: 1px solid #cde8cd;
+    }
+
+    .outline-btn:hover {
+      background: #f5fff5;
+    }
+
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      text-align: center;
+      flex-wrap: wrap;
+    }
+
+    .header-bar img {
+      height: 60px;
+      width: auto;
+      display: block;
+    }
+
+    .header-title {
+      font-size: 28px;
+      font-weight: bold;
+      color: #006400;
     }
 
     .suggestions {
@@ -189,6 +215,12 @@
       gap: 14px;
     }
 
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
     .trip-list {
       margin-top: 20px;
     }
@@ -217,23 +249,63 @@
       margin-top: 12px;
     }
 
+    .dashboard-shell {
+      margin-top: 24px;
+    }
+
+    .dashboard-stat {
+      background: #f7fbf7;
+      border: 1px solid #dbe8db;
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .dashboard-stat .value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #166534;
+      margin-top: 4px;
+    }
+
+    .dashboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .dashboard-table th,
+    .dashboard-table td {
+      padding: 10px;
+      border-bottom: 1px solid #e9efe9;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .dashboard-table th {
+      background: #f3faf3;
+      color: #166534;
+    }
+
+    .hidden {
+      display: none;
+    }
+
     @media (max-width: 700px) {
-      .grid-2 {
+      .grid-2,
+      .grid-3 {
         grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
-  <body>
-<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:20px;">
-    <img src="/logo-o17.svg" alt="Logo o17" style="height:60px;">
-    <div style="font-size:28px;font-weight:bold;color:#006400;">
-        Objetivo 17 - Triple O
-    </div>
-</div>
-
-<div id="step1" class="step active">
+  <div class="header-bar">
+    <img src="/logo-o17.svg" alt="Logo O17" />
+    <div class="header-title">Objetivo 17 - Triple O</div>
+  </div>
 
   <div id="step1" class="step active">
     <h2>Paso 1: Información general</h2>
@@ -241,11 +313,15 @@
     <label for="origenGeneral">Ciudad / punto de origen principal</label>
     <input type="text" id="origenGeneral" placeholder="Ej: Madrid" />
 
+    <label for="eventName">Nombre del evento</label>
+    <input type="text" id="eventName" placeholder="Ej: ERA 2026" />
+
     <div class="note">
-      Este campo es informativo. Los trayectos reales se configurarán como uno o varios tramos en el siguiente paso.
+      Los trayectos reales se configurarán como uno o varios tramos en el siguiente paso.
     </div>
 
     <button onclick="nextStep(2)">Siguiente</button>
+    <button class="outline-btn" onclick="openDashboard()">Ver dashboard del evento</button>
   </div>
 
   <div id="step2" class="step">
@@ -269,13 +345,16 @@
         <div>
           <label for="transporte1">Medio de transporte</label>
           <select id="transporte1">
-            <option value="coche">Coche (1 persona)</option>
-            <option value="coche-compartido">Coche compartido (2+ personas)</option>
-            <option value="avion">Avión</option>
-            <option value="tren">Tren</option>
+            <option value="petrol">Car – Petrol/Diesel</option>
+            <option value="hybrid">Car – Hybrid</option>
+            <option value="plugin">Car – Plug-in Hybrid</option>
+            <option value="electric">Car – Electric</option>
+            <option value="shared">Car – Shared ride (2+)</option>
+            <option value="avion">Plane</option>
+            <option value="tren">Train</option>
             <option value="bus">Bus</option>
-            <option value="metro">Metro / tranvía</option>
-            <option value="caminando">Caminando / bici</option>
+            <option value="metro">Metro / Tram</option>
+            <option value="caminando">Walk / Bike</option>
           </select>
         </div>
         <div>
@@ -288,7 +367,7 @@
       </div>
 
       <button onclick="calculateCurrentLeg()">Calcular tramo</button>
-      <div id="distanceResult" class="inline-info" style="display:none;"></div>
+      <div id="distanceResult" class="inline-info hidden"></div>
       <div id="map"></div>
 
       <div class="trip-actions">
@@ -302,11 +381,10 @@
 
     <div class="card">
       <h3>Resumen del viaje</h3>
-      <div id="tripStats" class="kpi-box">
-        No hay tramos añadidos todavía.
-      </div>
+      <div id="tripStats" class="kpi-box">No hay tramos añadidos todavía.</div>
       <div id="tripList" class="trip-list"></div>
       <button class="secondary-btn" onclick="goToAccommodation()">Continuar a alojamiento</button>
+      <button class="outline-btn" onclick="openDashboard()">Ver dashboard del evento</button>
     </div>
   </div>
 
@@ -348,19 +426,90 @@
   </div>
 
   <div id="step5" class="step">
-    <h2>Tu Huella de Carbono</h2>
+    <h2>Your carbon footprint</h2>
     <div id="resultado"></div>
     <div id="certificado"></div>
     <div id="desglose"></div>
     <button onclick="resetCalculator()">Nuevo cálculo</button>
+    <button class="outline-btn" onclick="openDashboard()">Ver dashboard del evento</button>
+  </div>
+
+  <div id="dashboardView" class="step">
+    <h2>Event dashboard</h2>
+    <div class="dashboard-shell">
+      <div class="grid-3">
+        <div class="dashboard-stat">
+          <div>Total calculations</div>
+          <div id="dashTotalEntries" class="value">0</div>
+        </div>
+        <div class="dashboard-stat">
+          <div>Total CO₂e</div>
+          <div id="dashTotalKg" class="value">0 kg</div>
+        </div>
+        <div class="dashboard-stat">
+          <div>Average per attendee</div>
+          <div id="dashAvgKg" class="value">0 kg</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:14px;">
+        <div class="card">
+          <h3>Travel profiles</h3>
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>Profile</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody id="profileTableBody"></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <h3>Modal split</h3>
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>Transport</th>
+                <th>Legs</th>
+              </tr>
+            </thead>
+            <tbody id="modalTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Recent calculations</h3>
+        <table class="dashboard-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Event</th>
+              <th>Total</th>
+              <th>Profile</th>
+              <th>Legs</th>
+            </tr>
+          </thead>
+          <tbody id="recentTableBody"></tbody>
+        </table>
+      </div>
+
+      <button class="secondary-btn" onclick="closeDashboard()">Volver a la calculadora</button>
+      <button class="outline-btn" onclick="downloadDashboardCsv()">Descargar CSV</button>
+      <button class="danger-btn" onclick="clearDashboardData()">Borrar datos del dashboard</button>
+    </div>
   </div>
 
   <script>
     const emissionFactors = {
       mainTransport: {
+        petrol: 0.21,
+        hybrid: 0.15,
+        plugin: 0.10,
+        electric: 0.05,
+        shared: 0.11,
         avion: 0.25,
-        coche: 0.22,
-        "coche-compartido": 0.11,
         tren: 0.04,
         bus: 0.05,
         metro: 0.03,
@@ -380,12 +529,32 @@
       }
     };
 
+    const transportLabels = {
+      petrol: "Car – Petrol/Diesel",
+      hybrid: "Car – Hybrid",
+      plugin: "Car – Plug-in Hybrid",
+      electric: "Car – Electric",
+      shared: "Car – Shared ride (2+)",
+      avion: "Plane",
+      tren: "Train",
+      bus: "Bus",
+      metro: "Metro / Tram",
+      caminando: "Walk / Bike"
+    };
+
+    const storageKey = "tripleo_event_dashboard";
+
+    const eventDashboard = {
+      calculations: []
+    };
+
     const footprint = {
       tripLegs: [],
       mainTripKg: 0,
       accommodationKg: 0,
       localTransportKg: 0,
-      totalKg: 0
+      totalKg: 0,
+      eventName: ""
     };
 
     let selectedOrigin = null;
@@ -394,12 +563,16 @@
     let markersLayer = null;
     let routeLayer = null;
     let currentLegDraft = null;
+    let lastCalculatorStep = 1;
 
     function nextStep(step) {
       for (let i = 1; i <= 5; i++) {
-        document.getElementById("step" + i).classList.remove("active");
+        const el = document.getElementById("step" + i);
+        if (el) el.classList.remove("active");
       }
+      document.getElementById("dashboardView").classList.remove("active");
       document.getElementById("step" + step).classList.add("active");
+      lastCalculatorStep = step;
 
       if (step === 2) {
         initializeMap();
@@ -407,6 +580,19 @@
           if (map) map.invalidateSize();
         }, 100);
       }
+    }
+
+    function openDashboard() {
+      for (let i = 1; i <= 5; i++) {
+        const el = document.getElementById("step" + i);
+        if (el) el.classList.remove("active");
+      }
+      document.getElementById("dashboardView").classList.add("active");
+      renderDashboard();
+    }
+
+    function closeDashboard() {
+      nextStep(lastCalculatorStep || 1);
     }
 
     function resetCalculator() {
@@ -417,7 +603,6 @@
       if (map) return;
 
       map = L.map("map").setView([40.4168, -3.7038], 5);
-
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: "&copy; OpenStreetMap contributors"
@@ -482,12 +667,10 @@
 
     async function searchLocation(query) {
       const response = await fetch(`/api/geocode?text=${encodeURIComponent(query)}`);
-
       if (!response.ok) {
         const err = await response.json();
         throw new Error(err.error || "Error al consultar localizaciones");
       }
-
       const data = await response.json();
       return data.features || [];
     }
@@ -516,7 +699,6 @@
               const div = document.createElement("div");
               div.className = "suggestion-item";
               div.textContent = place.properties.label;
-
               div.onclick = function () {
                 input.value = place.properties.label;
 
@@ -528,10 +710,8 @@
 
                 if (type === "origin") selectedOrigin = selected;
                 if (type === "destination") selectedDestination = selected;
-
                 suggestions.innerHTML = "";
               };
-
               suggestions.appendChild(div);
             });
           } catch (error) {
@@ -580,13 +760,11 @@
       });
 
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.error || "No se pudo calcular la ruta");
       }
 
       const distanceKm = data.features[0].properties.summary.distance / 1000;
-
       return {
         distanceKm,
         geojson: data
@@ -594,7 +772,7 @@
     }
 
     function getRouteProfile(transport) {
-      if (["coche", "coche-compartido", "bus", "tren", "metro"].includes(transport)) {
+      if (["petrol", "hybrid", "plugin", "electric", "shared", "bus", "tren", "metro"].includes(transport)) {
         return "driving-car";
       }
       return "driving-car";
@@ -639,7 +817,6 @@
         } else {
           const profile = getRouteProfile(transport);
           const routeData = await getRoadRouteDistance(profile);
-
           oneWayDistance = routeData.distanceKm;
 
           if (routeLayer && map) {
@@ -661,6 +838,7 @@
           originLabel: selectedOrigin.label,
           destinationLabel: selectedDestination.label,
           transport,
+          transportLabel: transportLabels[transport] || transport,
           tripType,
           calculationType,
           distanceOneWayKm: roundTo2(oneWayDistance),
@@ -668,12 +846,12 @@
           emissionsKg: roundTo2(emissionsKg)
         };
 
-        resultEl.style.display = "block";
+        resultEl.classList.remove("hidden");
         resultEl.innerHTML = `
           <div><strong>Tramo:</strong> ${currentLegDraft.name}</div>
           <div><strong>Origen:</strong> ${currentLegDraft.originLabel}</div>
           <div><strong>Destino:</strong> ${currentLegDraft.destinationLabel}</div>
-          <div><strong>Medio:</strong> ${transport}</div>
+          <div><strong>Medio:</strong> ${currentLegDraft.transportLabel}</div>
           <div><strong>Tipo de cálculo:</strong> ${currentLegDraft.calculationType}</div>
           <div><strong>Distancia ida:</strong> ${currentLegDraft.distanceOneWayKm} km</div>
           <div><strong>Distancia aplicada:</strong> ${currentLegDraft.distanceFinalKm} km</div>
@@ -695,10 +873,10 @@
       footprint.tripLegs.push({ ...currentLegDraft });
       refreshTripList();
       clearLegForm();
-      currentLegDraft = null;f
+      currentLegDraft = null;
 
       const resultEl = document.getElementById("distanceResult");
-      resultEl.style.display = "none";
+      resultEl.classList.add("hidden");
       resultEl.innerHTML = "";
     }
 
@@ -706,7 +884,7 @@
       document.getElementById("legName").value = "";
       document.getElementById("origenInput").value = "";
       document.getElementById("destinoInput").value = "";
-      document.getElementById("transporte1").value = "coche";
+      document.getElementById("transporte1").value = "petrol";
       document.getElementById("idaVuelta").value = "solo-ida";
 
       selectedOrigin = null;
@@ -737,7 +915,7 @@
         <div class="trip-item">
           <strong>Tramo ${index + 1}: ${leg.name}</strong><br>
           ${leg.originLabel} → ${leg.destinationLabel}<br>
-          Medio: ${leg.transport}<br>
+          Medio: ${leg.transportLabel}<br>
           Tipo: ${leg.tripType === "ida-vuelta" ? "Ida y vuelta" : "Solo ida"}<br>
           Distancia aplicada: ${leg.distanceFinalKm} km<br>
           Emisiones: ${leg.emissionsKg} kg CO₂e
@@ -762,7 +940,6 @@
       footprint.mainTripKg = roundTo2(
         footprint.tripLegs.reduce((sum, leg) => sum + leg.emissionsKg, 0)
       );
-
       nextStep(3);
     }
 
@@ -789,13 +966,9 @@
         return;
       }
 
-      footprint.localTransportKg =
-        kmPerDay * mobilityDays * emissionFactors.localTransport[localTransportType];
-
-      footprint.totalKg =
-        footprint.mainTripKg +
-        footprint.accommodationKg +
-        footprint.localTransportKg;
+      footprint.eventName = document.getElementById("eventName").value.trim() || "Event";
+      footprint.localTransportKg = kmPerDay * mobilityDays * emissionFactors.localTransport[localTransportType];
+      footprint.totalKg = footprint.mainTripKg + footprint.accommodationKg + footprint.localTransportKg;
 
       renderResults();
       nextStep(5);
@@ -811,21 +984,21 @@
       const certificateEl = document.getElementById("certificado");
       const breakdownEl = document.getElementById("desglose");
 
-      resultEl.innerHTML = `Huella total: <strong>${total} kg CO₂e</strong>`;
+      resultEl.innerHTML = `Footprint total: <strong>${total} kg CO₂e</strong>`;
 
       let level = "";
-      if (total < 50) level = "Oro";
-      else if (total < 100) level = "Plata";
-      else if (total < 200) level = "Bronce";
-      else level = "Mejora";
+      if (total < 50) level = "Basic";
+      else if (total < 100) level = "Smart";
+      else if (total < 200) level = "Pro";
+      else level = "Intensive";
 
-      certificateEl.innerHTML = `<strong>Nivel Triple O: ${level}</strong>`;
+      certificateEl.innerHTML = `<strong>Travel profile: ${level}</strong>`;
 
       const legsHtml = footprint.tripLegs.map((leg, index) => `
         <div style="margin-bottom:12px;">
           <strong>Tramo ${index + 1}: ${leg.name}</strong><br>
           ${leg.originLabel} → ${leg.destinationLabel}<br>
-          Medio: ${leg.transport}<br>
+          Medio: ${leg.transportLabel}<br>
           Distancia aplicada: ${leg.distanceFinalKm} km<br>
           Emisiones: ${leg.emissionsKg} kg CO₂e
         </div>
@@ -846,6 +1019,153 @@
           Estimación orientativa basada en factores simplificados. Para reporting formal conviene documentar factores, fuentes y supuestos.
         </div>
       `;
+
+      saveCalculation(level);
+    }
+
+    function saveCalculation(level) {
+      const record = {
+        id: Date.now(),
+        date: new Date().toISOString(),
+        eventName: footprint.eventName || "Event",
+        totalKg: roundTo2(footprint.totalKg),
+        mainTripKg: roundTo2(footprint.mainTripKg),
+        accommodationKg: roundTo2(footprint.accommodationKg),
+        localTransportKg: roundTo2(footprint.localTransportKg),
+        legs: footprint.tripLegs.length,
+        level,
+        modalSplit: footprint.tripLegs.map(leg => leg.transport)
+      };
+
+      eventDashboard.calculations.push(record);
+      localStorage.setItem(storageKey, JSON.stringify(eventDashboard.calculations));
+    }
+
+    function loadDashboard() {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        try {
+          eventDashboard.calculations = JSON.parse(stored);
+        } catch (e) {
+          eventDashboard.calculations = [];
+        }
+      }
+    }
+
+    function getDashboardSummary() {
+      const calculations = eventDashboard.calculations;
+      const totalEntries = calculations.length;
+      const totalKg = calculations.reduce((sum, item) => sum + item.totalKg, 0);
+      const avgKg = totalEntries ? roundTo2(totalKg / totalEntries) : 0;
+
+      const profiles = calculations.reduce((acc, item) => {
+        acc[item.level] = (acc[item.level] || 0) + 1;
+        return acc;
+      }, {});
+
+      const modalSplit = calculations.reduce((acc, item) => {
+        (item.modalSplit || []).forEach(mode => {
+          const label = transportLabels[mode] || mode;
+          acc[label] = (acc[label] || 0) + 1;
+        });
+        return acc;
+      }, {});
+
+      return {
+        totalEntries,
+        totalKg: roundTo2(totalKg),
+        avgKg,
+        profiles,
+        modalSplit,
+        recent: calculations.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10)
+      };
+    }
+
+    function renderDashboard() {
+      const summary = getDashboardSummary();
+
+      document.getElementById("dashTotalEntries").textContent = summary.totalEntries;
+      document.getElementById("dashTotalKg").textContent = `${summary.totalKg} kg`;
+      document.getElementById("dashAvgKg").textContent = `${summary.avgKg} kg`;
+
+      const orderedProfiles = ["Basic", "Smart", "Pro", "Intensive"];
+      document.getElementById("profileTableBody").innerHTML = orderedProfiles.map(profile => `
+        <tr>
+          <td>${profile}</td>
+          <td>${summary.profiles[profile] || 0}</td>
+        </tr>
+      `).join("");
+
+      const modalRows = Object.entries(summary.modalSplit)
+        .sort((a, b) => b[1] - a[1])
+        .map(([label, count]) => `
+          <tr>
+            <td>${label}</td>
+            <td>${count}</td>
+          </tr>
+        `).join("");
+
+      document.getElementById("modalTableBody").innerHTML = modalRows || `
+        <tr>
+          <td colspan="2">No data yet</td>
+        </tr>
+      `;
+
+      document.getElementById("recentTableBody").innerHTML = summary.recent.map(item => `
+        <tr>
+          <td>${new Date(item.date).toLocaleString()}</td>
+          <td>${item.eventName}</td>
+          <td>${item.totalKg} kg</td>
+          <td>${item.level}</td>
+          <td>${item.legs}</td>
+        </tr>
+      `).join("") || `
+        <tr>
+          <td colspan="5">No calculations saved yet</td>
+        </tr>
+      `;
+    }
+
+    function downloadDashboardCsv() {
+      const rows = [
+        ["id", "date", "eventName", "totalKg", "mainTripKg", "accommodationKg", "localTransportKg", "legs", "level", "modalSplit"]
+      ];
+
+      eventDashboard.calculations.forEach(item => {
+        rows.push([
+          item.id,
+          item.date,
+          item.eventName,
+          item.totalKg,
+          item.mainTripKg,
+          item.accommodationKg,
+          item.localTransportKg,
+          item.legs,
+          item.level,
+          (item.modalSplit || []).join(" | ")
+        ]);
+      });
+
+      const csv = rows.map(row => row.map(value => `"${String(value ?? "").replace(/"/g, '""')}"`).join(",")).join("
+");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "triple-o-dashboard.csv";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    function clearDashboardData() {
+      const confirmed = window.confirm("¿Seguro que quieres borrar todos los datos guardados del dashboard?");
+      if (!confirmed) return;
+
+      eventDashboard.calculations = [];
+      localStorage.removeItem(storageKey);
+      renderDashboard();
     }
 
     function roundTo2(value) {
@@ -854,6 +1174,8 @@
 
     setupAutocomplete("origenInput", "origenSuggestions", "origin");
     setupAutocomplete("destinoInput", "destinoSuggestions", "destination");
+    loadDashboard();
   </script>
 </body>
 </html>
+

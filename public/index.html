@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -16,14 +16,6 @@
       padding: 20px;
       background: #f0f8f0;
       color: #1f1f1f;
-    }
-
-    .logo {
-      text-align: center;
-      font-size: 28px;
-      font-weight: bold;
-      color: #006400;
-      margin-bottom: 20px;
     }
 
     .step {
@@ -51,7 +43,8 @@
       margin-bottom: 6px;
     }
 
-    input, select {
+    input,
+    select {
       width: 100%;
       padding: 10px;
       margin-bottom: 8px;
@@ -225,15 +218,10 @@
   </style>
 </head>
 <body>
-  <body>
-<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:20px;">
-    <img src="/logo-o17.svg" alt="Logo o17" style="height:60px;">
-    <div style="font-size:28px;font-weight:bold;color:#006400;">
-        Objetivo 17 - Triple O
-    </div>
-</div>
-
-<div id="step1" class="step active">
+  <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;text-align:center;">
+    <img src="/logo-o17.svg" alt="Logo O17" style="height:60px;width:auto;display:block;">
+    <div style="font-size:28px;font-weight:bold;color:#006400;">Objetivo 17 - Triple O</div>
+  </div>
 
   <div id="step1" class="step active">
     <h2>Paso 1: Información general</h2>
@@ -695,7 +683,7 @@
       footprint.tripLegs.push({ ...currentLegDraft });
       refreshTripList();
       clearLegForm();
-      currentLegDraft = null;f
+      currentLegDraft = null;
 
       const resultEl = document.getElementById("distanceResult");
       resultEl.style.display = "none";
@@ -814,12 +802,12 @@
       resultEl.innerHTML = `Huella total: <strong>${total} kg CO₂e</strong>`;
 
       let level = "";
-      if (total < 50) level = "Oro";
-      else if (total < 100) level = "Plata";
-      else if (total < 200) level = "Bronce";
-      else level = "Mejora";
+      if (total < 50) level = "Basic";
+      else if (total < 100) level = "Smart";
+      else if (total < 200) level = "Pro";
+      else level = "Intensive";
 
-      certificateEl.innerHTML = `<strong>Nivel Triple O: ${level}</strong>`;
+      certificateEl.innerHTML = `<strong>Travel profile: ${level}</strong>`;
 
       const legsHtml = footprint.tripLegs.map((leg, index) => `
         <div style="margin-bottom:12px;">

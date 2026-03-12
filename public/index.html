@@ -257,14 +257,17 @@
         <div>
           <label for="transporte1">Medio de transporte</label>
           <select id="transporte1">
-            <option value="coche">Coche (1 persona)</option>
-            <option value="coche-compartido">Coche compartido (2+ personas)</option>
-            <option value="avion">Avión</option>
-            <option value="tren">Tren</option>
-            <option value="bus">Bus</option>
-            <option value="metro">Metro / tranvía</option>
-            <option value="caminando">Caminando / bici</option>
-          </select>
+  <option value="petrol">Car – Petrol/Diesel</option>
+  <option value="hybrid">Car – Hybrid</option>
+  <option value="plugin">Car – Plug-in Hybrid</option>
+  <option value="electric">Car – Electric</option>
+  <option value="shared">Car – Shared ride (2+)</option>
+  <option value="avion">Plane</option>
+  <option value="tren">Train</option>
+  <option value="bus">Bus</option>
+  <option value="metro">Metro / Tram</option>
+  <option value="caminando">Walk / Bike</option>
+</select>
         </div>
         <div>
           <label for="idaVuelta">Tipo de trayecto</label>
@@ -346,13 +349,17 @@
   <script>
     const emissionFactors = {
       mainTransport: {
-        avion: 0.25,
-        coche: 0.22,
-        "coche-compartido": 0.11,
-        tren: 0.04,
-        bus: 0.05,
-        metro: 0.03,
-        caminando: 0
+  petrol: 0.21,
+  hybrid: 0.15,
+  plugin: 0.10,
+  electric: 0.05,
+  shared: 0.11,
+  avion: 0.25,
+  tren: 0.04,
+  bus: 0.05,
+  metro: 0.03,
+  caminando: 0
+},
       },
       accommodation: {
         "hotel-3": 15,
@@ -582,11 +589,11 @@
     }
 
     function getRouteProfile(transport) {
-      if (["coche", "coche-compartido", "bus", "tren", "metro"].includes(transport)) {
-        return "driving-car";
-      }
-      return "driving-car";
-    }
+  if (["petrol", "hybrid", "plugin", "electric", "shared", "bus", "tren", "metro"].includes(transport)) {
+    return "driving-car";
+  }
+  return "driving-car";
+}
 
     async function calculateCurrentLeg() {
       try {
@@ -694,7 +701,7 @@
       document.getElementById("legName").value = "";
       document.getElementById("origenInput").value = "";
       document.getElementById("destinoInput").value = "";
-      document.getElementById("transporte1").value = "coche";
+      document.getElementById("transporte1").value = "petrol";
       document.getElementById("idaVuelta").value = "solo-ida";
 
       selectedOrigin = null;

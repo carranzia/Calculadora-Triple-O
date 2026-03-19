@@ -248,6 +248,7 @@
             <option value="plugin">Coche – Híbrido enchufable</option>
             <option value="electric">Coche – Eléctrico</option>
             <option value="shared">Coche compartido (2+ personas)</option>
+            <option value="taxi">Taxi / VTC</option>
             <option value="avion">Avión</option>
             <option value="tren">Tren</option>
             <option value="bus">Autobús</option>
@@ -273,7 +274,7 @@
       </div>
 
       <div class="note">
-        Para avión se usa distancia aérea. Para coche y autobús se usa ruta por carretera. Para tren y metro se usa una estimación geográfica ajustada. Caminar y bici generan 0 emisiones.
+        Para avión se usa distancia aérea. Para coche, taxi y autobús se usa ruta por carretera. Para tren y metro se usa una estimación geográfica ajustada. Caminar y bici generan 0 emisiones.
       </div>
     </div>
 
@@ -314,6 +315,7 @@
 
     <label for="transpAloj">Transporte utilizado</label>
     <select id="transpAloj">
+      <option value="taxi">Taxi / VTC</option>
       <option value="bus">Autobús</option>
       <option value="metro">Metro / bus público</option>
       <option value="coche">Coche</option>
@@ -340,6 +342,7 @@
         plugin: 0.08,
         electric: 0.05,
         shared: 0.09,
+        taxi: 0.19,
         avion: 0.25,
         tren: 0.035,
         bus: 0.06,
@@ -361,6 +364,7 @@
       plugin: "Coche – Híbrido enchufable",
       electric: "Coche – Eléctrico",
       shared: "Coche compartido",
+      taxi: "Taxi / VTC",
       avion: "Avión",
       tren: "Tren",
       bus: "Autobús",
@@ -584,7 +588,7 @@
     }
 
     function isRoadBasedTransport(transport) {
-      return ["petrol", "hybrid", "plugin", "electric", "shared", "bus", "coche"].includes(transport);
+      return ["petrol", "hybrid", "plugin", "electric", "shared", "taxi", "bus", "coche"].includes(transport);
     }
 
     function getDistanceMultiplier(transport) {

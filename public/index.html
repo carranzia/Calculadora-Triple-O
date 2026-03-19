@@ -218,711 +218,6 @@
   </style>
 </head>
 <body>
- <div style="text-align:center; margin-bottom:30px;">
-  
-  <img src="/logo-017.svg" alt="Logo O17" style="height:120px; width:auto; display:block; margin:0 auto 15px auto;">
-  
-  <div style="font-size:30px; font-weight:bold; color:#006400;">
-    Objetivo 17 - Triple O
-  </div>
-
-</div>
-
-  <div id="step1" class="step active">
-    <h2>Paso 1: Información general</h2>
-
-    <label for="origenGeneral">Ciudad / punto de origen principal</label>
-    <input type="text" id="origenGeneral" placeholder="Ej: Madrid" />
-
-    <div class="note">
-      Este campo es informativo. Los trayectos reales se configurarán como uno o varios tramos en el siguiente paso.
-    </div>
-
-    <button onclick="nextStep(2)">Siguiente</button>
-  </div>
-
-  <div id="step2" class="step">
-    <h2>Paso 2: Viajes multi-leg</h2>
-
-    <div class="card">
-      <h3>Añadir un tramo</h3>
-
-      <label for="legName">Nombre del tramo</label>
-      <input id="legName" type="text" placeholder="Ej: Casa → Aeropuerto" />
-
-      <label for="origenInput">Origen</label>
-      <input id="origenInput" type="text" placeholder="Introduce ciudad o dirección" autocomplete="off" />
-      <div id="origenSuggestions" class="suggestions"></div>
-
-      <label for="destinoInput">Destino</label>
-      <input id="destinoInput" type="text" placeholder="Introduce ciudad o dirección" autocomplete="off" />
-      <div id="destinoSuggestions" class="suggestions"></div>
-
-      <div class="grid-2">
-        <div>
-          <label for="transporte1">Medio de transporte</label>
-          <select id="transporte1">
-            <option value="petrol">Coche – Gasolina / Diésel</option>
-            <option value="hybrid">Coche – Híbrido</option>
-            <option value="plugin">Coche – Híbrido enchufable</option>
-            <option value="electric">Coche – Eléctrico</option>
-            <option value="shared">Coche compartido (2+ personas)</option>
-            <option value="avion">Avión</option>
-            <option value="tren">Tren</option>
-            <option value="bus">Autobús</option>
-            <option value="metro">Metro / Tranvía</option>
-            <option value="caminando">Caminando / Bicicleta</option>
-          </select>
-        </div>
-        <div>
-          <label for="idaVuelta">Tipo de trayecto</label>
-          <select id="idaVuelta">
-            <option value="solo-ida">Solo ida</option>
-            <option value="ida-vuelta">Ida y vuelta</option>
-          </select>
-        </div>
-      </div>
-
-      <button onclick="calculateCurrentLeg()">Calcular tramo</button>
-      <div id="distanceResult" class="inline-info" style="display:none;"></div>
-      <div id="map"></div>
-
-      <div class="trip-actions">
-        <button onclick="addLegToTrip()">Añadir tramo al viaje</button>
-      </div>
-
-      <div class="note">
-        Para avión se usa distancia aérea. Para coche, autobús, tren y metro se usa aproximación terrestre. Caminar y bici generan 0 emisiones.
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Resumen del viaje</h3>
-      <div id="tripStats" class="kpi-box">
-        No hay tramos añadidos todavía.
-      </div>
-      <div id="tripList" class="trip-list"></div>
-      <button class="secondary-btn" onclick="goToAccommodation()">Continuar a alojamiento</button>
-    </div>
-  </div>
-
-  <div id="step3" class="step">
-    <h2>Paso 3: Alojamiento</h2>
-
-    <label for="noches">Número de noches</label>
-    <input type="number" id="noches" placeholder="Ej: 2" min="0" step="1" />
-
-    <label for="alojamiento">Tipo de alojamiento</label>
-    <select id="alojamiento">
-      <option value="hotel-3">Hotel 3*</option>
-      <option value="hotel-4">Hotel 4*</option>
-      <option value="hotel-5">Hotel 5*</option>
-    </select>
-
-    <button onclick="calculateAccommodation()">Siguiente</button>
-  </div>
-
-  <div id="step4" class="step">
-    <h2>Paso 4: Movilidad local adicional</h2>
-
-    <label for="kmAloj">Distancia diaria total entre alojamiento y evento (km)</label>
-    <input type="number" id="kmAloj" placeholder="Ej: 10" min="0" step="0.1" />
-
-    <label for="diasMovilidad">Número de días con desplazamiento local</label>
-    <input type="number" id="diasMovilidad" placeholder="Ej: 2" min="0" step="1" />
-
-    <label for="transpAloj">Transporte utilizado</label>
-    <select id="transpAloj">
-      <option value="taxi">Taxi / VTC</option>
-      <option value="metro">Metro / bus público</option>
-      <option value="coche">Coche</option>
-      <option value="caminando">Caminando / bici</option>
-      <option value="transporte-evento">Transporte organizado por el evento</option>
-    </select>
-
-    <button onclick="finalizeCalculation()">Finalizar y ver resultado</button>
-  </div>
-
-  <div id="step5" class="step">
-    <h2>Tu Huella de Carbono</h2>
-    <div id="resultado"></div>
-    <div id="certificado"></div>
-    <div id="desglose"></div>
-    <button onclick="resetCalculator()">Nuevo cálculo</button>
-  </div>
-
-  <script>
-   const emissionFactors = {
-  transport: {
-    petrol: 0.18,
-    hybrid: 0.12,
-    plugin: 0.08,
-    electric: 0.05,
-    shared: 0.09,
-    taxi: 0.19,
-    avion: 0.25,
-    tren: 0.035,
-    bus: 0.06,
-    metro: 0.03,
-    coche: 0.18,
-    "transporte-evento": 0.04,
-    caminando: 0
-  },
-  accommodation: {
-    "hotel-3": 15,
-    "hotel-4": 20,
-    "hotel-5": 25
-  }
-};
-      },
-      localTransport: {
-        taxi: 0.30,
-        metro: 0.10,
-        coche: 0.15,
-        caminando: 0,
-        "transporte-evento": 0.05
-      }
-    };
-
-    const transportLabels = {
-      petrol: "Coche – Gasolina / Diésel",
-      hybrid: "Coche – Híbrido",
-      plugin: "Coche – Híbrido enchufable",
-      electric: "Coche – Eléctrico",
-      shared: "Coche compartido",
-      avion: "Avión",
-      tren: "Tren",
-      bus: "Autobús",
-      metro: "Metro / Tranvía",
-      caminando: "Caminando / Bicicleta"
-    };
-
-    const footprint = {
-      tripLegs: [],
-      mainTripKg: 0,
-      accommodationKg: 0,
-      localTransportKg: 0,
-      totalKg: 0
-    };
-
-    let selectedOrigin = null;
-    let selectedDestination = null;
-    let map = null;
-    let markersLayer = null;
-    let routeLayer = null;
-    let currentLegDraft = null;
-
-    function nextStep(step) {
-      for (let i = 1; i <= 5; i++) {
-        document.getElementById("step" + i).classList.remove("active");
-      }
-      document.getElementById("step" + step).classList.add("active");
-
-      if (step === 2) {
-        initializeMap();
-        setTimeout(() => {
-          if (map) map.invalidateSize();
-        }, 100);
-      }
-    }
-
-    function resetCalculator() {
-      location.reload();
-    }
-
-    function initializeMap() {
-      if (map) return;
-
-      map = L.map("map").setView([40.4168, -3.7038], 5);
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: "&copy; OpenStreetMap contributors"
-      }).addTo(map);
-
-      markersLayer = L.layerGroup().addTo(map);
-    }
-
-    function showMap() {
-      const mapEl = document.getElementById("map");
-      mapEl.style.display = "block";
-      if (map) {
-        setTimeout(() => map.invalidateSize(), 100);
-      }
-    }
-
-    function clearMapLayers() {
-      if (markersLayer) markersLayer.clearLayers();
-      if (routeLayer && map) {
-        map.removeLayer(routeLayer);
-        routeLayer = null;
-      }
-    }
-
-    function drawMarkers() {
-      clearMapLayers();
-      if (!selectedOrigin || !selectedDestination || !map) return;
-
-      const originMarker = L.marker([selectedOrigin.lat, selectedOrigin.lng]).bindPopup("Origen");
-      const destinationMarker = L.marker([selectedDestination.lat, selectedDestination.lng]).bindPopup("Destino");
-
-      markersLayer.addLayer(originMarker);
-      markersLayer.addLayer(destinationMarker);
-
-      const bounds = L.latLngBounds(
-        [selectedOrigin.lat, selectedOrigin.lng],
-        [selectedDestination.lat, selectedDestination.lng]
-      );
-      map.fitBounds(bounds, { padding: [40, 40] });
-    }
-
-    function drawStraightLine() {
-      if (!selectedOrigin || !selectedDestination || !map) return;
-
-      routeLayer = L.polyline(
-        [
-          [selectedOrigin.lat, selectedOrigin.lng],
-          [selectedDestination.lat, selectedDestination.lng]
-        ],
-        { weight: 4 }
-      ).addTo(map);
-
-      const bounds = L.latLngBounds(routeLayer.getLatLngs());
-      map.fitBounds(bounds, { padding: [40, 40] });
-    }
-
-    function drawGeoJsonRoute(geojson) {
-      if (!map) return;
-      routeLayer = L.geoJSON(geojson, { style: { weight: 5 } }).addTo(map);
-      map.fitBounds(routeLayer.getBounds(), { padding: [40, 40] });
-    }
-
-    async function searchLocation(query) {
-      const response = await fetch(`/api/geocode?text=${encodeURIComponent(query)}`);
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || "Error al consultar localizaciones");
-      }
-
-      const data = await response.json();
-      return data.features || [];
-    }
-
-    function setupAutocomplete(inputId, suggestionsId, type) {
-      const input = document.getElementById(inputId);
-      const suggestions = document.getElementById(suggestionsId);
-      let debounceTimer = null;
-
-      input.addEventListener("input", function () {
-        clearTimeout(debounceTimer);
-        const query = input.value.trim();
-
-        if (type === "origin") selectedOrigin = null;
-        if (type === "destination") selectedDestination = null;
-
-        suggestions.innerHTML = "";
-        if (query.length < 3) return;
-
-        debounceTimer = setTimeout(async () => {
-          try {
-            const results = await searchLocation(query);
-            suggestions.innerHTML = "";
-
-            results.forEach(place => {
-              const div = document.createElement("div");
-              div.className = "suggestion-item";
-              div.textContent = place.properties.label;
-
-              div.onclick = function () {
-                input.value = place.properties.label;
-
-                const selected = {
-                  label: place.properties.label,
-                  lng: place.geometry.coordinates[0],
-                  lat: place.geometry.coordinates[1]
-                };
-
-                if (type === "origin") selectedOrigin = selected;
-                if (type === "destination") selectedDestination = selected;
-
-                suggestions.innerHTML = "";
-              };
-
-              suggestions.appendChild(div);
-            });
-          } catch (error) {
-            console.error(error);
-            suggestions.innerHTML = `<div class="suggestion-item">No se pudieron cargar sugerencias</div>`;
-          }
-        }, 300);
-      });
-
-      document.addEventListener("click", function (event) {
-        if (!suggestions.contains(event.target) && event.target !== input) {
-          suggestions.innerHTML = "";
-        }
-      });
-    }
-
-    function haversineDistance(lat1, lon1, lat2, lon2) {
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * Math.PI / 180) *
-        Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c;
-    }
-
-    async function getRoadRouteDistance(profile) {
-      const response = await fetch("/api/route", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          profile,
-          coordinates: [
-            [selectedOrigin.lng, selectedOrigin.lat],
-            [selectedDestination.lng, selectedDestination.lat]
-          ]
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "No se pudo calcular la ruta");
-      }
-
-      const distanceKm = data.features[0].properties.summary.distance / 1000;
-
-      return {
-        distanceKm,
-        geojson: data
-      };
-    }
-
-    function isRoadBasedTransport(transport) {
-  return ["petrol", "hybrid", "plugin", "electric", "shared", "bus", "taxi", "coche"].includes(transport);
-}
-
-function getDistanceMultiplier(transport) {
-  if (transport === "avion") return 1.0;
-  if (transport === "tren") return 1.2;
-  if (transport === "metro") return 1.3;
-  return 1.0;
-}
-    }
-
-    async function calculateCurrentLeg() {
-      try {
-        const transport = document.getElementById("transporte1").value;
-        const tripType = document.getElementById("idaVuelta").value;
-        const legName = document.getElementById("legName").value.trim() || "Tramo sin nombre";
-        const resultEl = document.getElementById("distanceResult");
-
-        if (!selectedOrigin || !selectedDestination) {
-          alert("Selecciona origen y destino desde la lista de sugerencias.");
-          return;
-        }
-
-        showMap();
-        drawMarkers();
-
-        let oneWayDistance = 0;
-let calculationType = "";
-
-if (transport === "avion") {
-  oneWayDistance = haversineDistance(
-    selectedOrigin.lat,
-    selectedOrigin.lng,
-    selectedDestination.lat,
-    selectedDestination.lng
-  ) * getDistanceMultiplier(transport);
-
-  drawStraightLine();
-  calculationType = "Distancia aérea";
-
-} else if (transport === "tren" || transport === "metro") {
-
-  oneWayDistance = haversineDistance(
-    selectedOrigin.lat,
-    selectedOrigin.lng,
-    selectedDestination.lat,
-    selectedDestination.lng
-  ) * getDistanceMultiplier(transport);
-
-  drawStraightLine();
-  calculationType = "Estimación geográfica ajustada";
-
-} else if (transport === "caminando") {
-
-  oneWayDistance = haversineDistance(
-    selectedOrigin.lat,
-    selectedOrigin.lng,
-    selectedDestination.lat,
-    selectedDestination.lng
-  );
-
-  drawStraightLine();
-  calculationType = "Distancia lineal";
-
-} else if (isRoadBasedTransport(transport)) {
-
-  const routeData = await getRoadRouteDistance("driving-car");
-  oneWayDistance = routeData.distanceKm;
-
-  if (routeLayer && map) {
-    map.removeLayer(routeLayer);
-    routeLayer = null;
-  }
-
-  drawGeoJsonRoute(routeData.geojson);
-  calculationType = "Ruta por carretera";
-
-} else {
-
-  oneWayDistance = haversineDistance(
-    selectedOrigin.lat,
-    selectedOrigin.lng,
-    selectedDestination.lat,
-    selectedDestination.lng
-  );
-
-  drawStraightLine();
-  calculationType = "Estimación básica";
-}
-
-const finalDistance = tripType === "ida-vuelta" ? oneWayDistance * 2 : oneWayDistance;
-const factor = emissionFactors.transport[transport] || 0;
-const emissionsKg = finalDistance * factor;<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Calculadora Huella de Carbono - Triple O</title>
-
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 920px;
-      margin: 0 auto;
-      padding: 20px;
-      background: #f0f8f0;
-      color: #1f1f1f;
-    }
-
-    .step {
-      display: none;
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      margin-bottom: 20px;
-    }
-
-    .step.active {
-      display: block;
-    }
-
-    h2, h3 {
-      margin-top: 0;
-      color: #006400;
-    }
-
-    label {
-      display: block;
-      font-weight: bold;
-      margin-top: 12px;
-      margin-bottom: 6px;
-    }
-
-    input,
-    select {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 8px;
-      box-sizing: border-box;
-      border: 1px solid #cfd8cf;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-
-    button {
-      background: #28a745;
-      color: white;
-      padding: 14px;
-      border: none;
-      width: 100%;
-      font-size: 17px;
-      cursor: pointer;
-      border-radius: 8px;
-      margin-top: 10px;
-    }
-
-    button:hover {
-      background: #218838;
-    }
-
-    .secondary-btn {
-      background: #5f6f5f;
-    }
-
-    .secondary-btn:hover {
-      background: #4f5d4f;
-    }
-
-    .danger-btn {
-      background: #b42318;
-    }
-
-    .danger-btn:hover {
-      background: #912018;
-    }
-
-    .suggestions {
-      border: 1px solid #ddd;
-      background: white;
-      border-radius: 8px;
-      max-height: 180px;
-      overflow-y: auto;
-      margin-bottom: 10px;
-    }
-
-    .suggestion-item {
-      padding: 8px 10px;
-      cursor: pointer;
-      border-bottom: 1px solid #f0f0f0;
-      font-size: 14px;
-    }
-
-    .suggestion-item:last-child {
-      border-bottom: none;
-    }
-
-    .suggestion-item:hover {
-      background: #f2f2f2;
-    }
-
-    .note {
-      font-size: 14px;
-      color: #555;
-      margin-top: 8px;
-      line-height: 1.5;
-    }
-
-    .inline-info {
-      margin-top: 12px;
-      padding: 12px;
-      background: #f7fbf7;
-      border: 1px solid #dbe8db;
-      border-radius: 10px;
-      line-height: 1.5;
-    }
-
-    #map {
-      height: 320px;
-      width: 100%;
-      border-radius: 12px;
-      margin-top: 15px;
-      border: 1px solid #dbe8db;
-      display: none;
-    }
-
-    #resultado,
-    #certificado {
-      font-size: 24px;
-      font-weight: bold;
-      text-align: center;
-      margin: 20px 0;
-    }
-
-    #desglose {
-      background: #f7fbf7;
-      border: 1px solid #dbe8db;
-      border-radius: 10px;
-      padding: 15px;
-      margin-top: 20px;
-      line-height: 1.7;
-    }
-
-    .small {
-      font-size: 13px;
-      color: #666;
-    }
-
-    .route-badge {
-      display: inline-block;
-      background: #eaf6ea;
-      color: #166534;
-      border: 1px solid #cde8cd;
-      border-radius: 20px;
-      padding: 4px 10px;
-      font-size: 13px;
-      margin-top: 10px;
-    }
-
-    .card {
-      background: #fcfffc;
-      border: 1px solid #dbe8db;
-      border-radius: 12px;
-      padding: 16px;
-      margin: 14px 0;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .trip-list {
-      margin-top: 20px;
-    }
-
-    .trip-item {
-      background: #f7fbf7;
-      border: 1px solid #dbe8db;
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 12px;
-    }
-
-    .trip-item strong {
-      color: #166534;
-    }
-
-    .trip-actions {
-      margin-top: 12px;
-    }
-
-    .kpi-box {
-      background: #f7fbf7;
-      border: 1px solid #dbe8db;
-      border-radius: 12px;
-      padding: 12px;
-      margin-top: 12px;
-    }
-
-    @media (max-width: 700px) {
-      .grid-2 {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
-</head>
-<body>
   <div style="text-align:center; margin-bottom:30px;">
     <img src="/logo-017.svg" alt="Logo O17" style="height:120px; width:auto; display:block; margin:0 auto 15px auto;">
     <div style="font-size:30px; font-weight:bold; color:#006400;">
@@ -930,21 +225,8 @@ const emissionsKg = finalDistance * factor;<!DOCTYPE html>
     </div>
   </div>
 
-  <div id="step1" class="step active">
-    <h2>Paso 1: Información general</h2>
-
-    <label for="origenGeneral">Ciudad / punto de origen principal</label>
-    <input type="text" id="origenGeneral" placeholder="Ej: Madrid" />
-
-    <div class="note">
-      Este campo es informativo. Los trayectos reales se configurarán como uno o varios tramos en el siguiente paso.
-    </div>
-
-    <button onclick="nextStep(2)">Siguiente</button>
-  </div>
-
-  <div id="step2" class="step">
-    <h2>Paso 2: Viajes multi-leg</h2>
+  <div id="step2" class="step active">
+    <h2>Paso 1: Viajes multi-leg</h2>
 
     <div class="card">
       <h3>Añadir un tramo</h3>
@@ -994,7 +276,7 @@ const emissionsKg = finalDistance * factor;<!DOCTYPE html>
       </div>
 
       <div class="note">
-        Para avión se usa distancia aérea. Para coche, taxi y autobús se usa ruta por carretera. Para tren y metro se usa una estimación geográfica ajustada. Caminar y bici generan 0 emisiones.
+        Para avión se usa distancia aérea. Para coche y autobús se usa ruta por carretera. Para tren y metro se usa una estimación geográfica ajustada. Caminar y bici generan 0 emisiones.
       </div>
     </div>
 
@@ -1009,7 +291,7 @@ const emissionsKg = finalDistance * factor;<!DOCTYPE html>
   </div>
 
   <div id="step3" class="step">
-    <h2>Paso 3: Alojamiento</h2>
+    <h2>Paso 2: Alojamiento</h2>
 
     <label for="noches">Número de noches</label>
     <input type="number" id="noches" placeholder="Ej: 2" min="0" step="1" />
@@ -1025,7 +307,7 @@ const emissionsKg = finalDistance * factor;<!DOCTYPE html>
   </div>
 
   <div id="step4" class="step">
-    <h2>Paso 4: Movilidad local adicional</h2>
+    <h2>Paso 3: Movilidad local adicional</h2>
 
     <label for="kmAloj">Distancia diaria total entre alojamiento y evento (km)</label>
     <input type="number" id="kmAloj" placeholder="Ej: 10" min="0" step="0.1" />
@@ -1035,7 +317,7 @@ const emissionsKg = finalDistance * factor;<!DOCTYPE html>
 
     <label for="transpAloj">Transporte utilizado</label>
     <select id="transpAloj">
-      <option value="taxi">Taxi / VTC</option>
+      <option value="bus">Autobús</option>
       <option value="metro">Metro / bus público</option>
       <option value="coche">Coche</option>
       <option value="caminando">Caminando / bici</option>
@@ -1061,7 +343,6 @@ const emissionsKg = finalDistance * factor;<!DOCTYPE html>
         plugin: 0.08,
         electric: 0.05,
         shared: 0.09,
-        taxi: 0.19,
         avion: 0.25,
         tren: 0.035,
         bus: 0.06,
@@ -1087,7 +368,9 @@ const emissionsKg = finalDistance * factor;<!DOCTYPE html>
       tren: "Tren",
       bus: "Autobús",
       metro: "Metro / Tranvía",
-      caminando: "Caminando / Bicicleta"
+      caminando: "Caminando / Bicicleta",
+      coche: "Coche",
+      "transporte-evento": "Transporte organizado por el evento"
     };
 
     const footprint = {
@@ -1106,7 +389,7 @@ const emissionsKg = finalDistance * factor;<!DOCTYPE html>
     let currentLegDraft = null;
 
     function nextStep(step) {
-      for (let i = 1; i <= 5; i++) {
+      for (let i = 2; i <= 5; i++) {
         document.getElementById("step" + i).classList.remove("active");
       }
       document.getElementById("step" + step).classList.add("active");
@@ -1304,7 +587,7 @@ const emissionsKg = finalDistance * factor;<!DOCTYPE html>
     }
 
     function isRoadBasedTransport(transport) {
-      return ["petrol", "hybrid", "plugin", "electric", "shared", "bus", "taxi", "coche"].includes(transport);
+      return ["petrol", "hybrid", "plugin", "electric", "shared", "bus", "coche"].includes(transport);
     }
 
     function getDistanceMultiplier(transport) {
@@ -1553,12 +836,12 @@ const emissionsKg = finalDistance * factor;<!DOCTYPE html>
       resultEl.innerHTML = `Huella total: <strong>${total} kg CO₂e</strong>`;
 
       let level = "";
-      if (total < 50) level = "Basic";
-      else if (total < 100) level = "Smart";
-      else if (total < 200) level = "Pro";
-      else level = "Intensive";
+      if (total < 50) level = "Baja";
+      else if (total < 100) level = "Moderada";
+      else if (total < 200) level = "Alta";
+      else level = "Muy alta";
 
-      certificateEl.innerHTML = `<strong>Travel profile: ${level}</strong>`;
+      certificateEl.innerHTML = `<strong>Perfil de huella: ${level}</strong>`;
 
       const legsHtml = footprint.tripLegs.map((leg, index) => `
         <div style="margin-bottom:12px;">
@@ -1593,6 +876,11 @@ const emissionsKg = finalDistance * factor;<!DOCTYPE html>
 
     setupAutocomplete("origenInput", "origenSuggestions", "origin");
     setupAutocomplete("destinoInput", "destinoSuggestions", "destination");
+
+    initializeMap();
+    setTimeout(() => {
+      if (map) map.invalidateSize();
+    }, 100);
   </script>
 </body>
 </html>

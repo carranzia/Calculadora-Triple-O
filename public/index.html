@@ -85,18 +85,16 @@
     .danger-btn:hover {
       background: #912018;
     }
-	.suggestions {
-  	display: none;
- 	border: 1px solid #ddd;
-  	background: white;
-  	border-radius: 8px;
-  	max-height: 180px;
-  	overflow-y: auto;
-  	margin-bottom: 10px;
-  	position: relative;
-  	z-index: 50;
 
-        }
+    .suggestions {
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 8px;
+      max-height: 180px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      display: none;
+    }
 
     .suggestion-item {
       padding: 8px 10px;
@@ -277,7 +275,7 @@
       </div>
 
       <div class="note">
-        Para avión se usa distancia aérea. Para coche, taxi y autobús se usa ruta por carretera. Para tren y metro se usa una estimación geográfica ajustada. Caminar y bici generan 0 emisiones.
+        Selecciona una opción de la lista para origen y destino. Para avión se usa distancia aérea. Para coche, taxi y autobús se usa ruta por carretera. Para tren y metro se usa una estimación geográfica ajustada.
       </div>
     </div>
 
@@ -412,7 +410,6 @@
 
     function initializeMap() {
       if (map) return;
-
       map = L.map("map").setView([40.4168, -3.7038], 5);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -490,90 +487,76 @@
     }
 
     function setupAutocomplete(inputId, suggestionsId, type) {
-  const input = document.getElementById(inputId);
-  const suggestions = document.getElementById(suggestionsId);
-  let debounceTimer = null;
+      const input = document.getElementById(inputId);
+      const suggestions = document.getElementById(suggestionsId);
+      let debounceTimer = null;
 
-  function clearSuggestions() {
-    suggestions.innerHTML = "";
-    suggestions.style.display = "none";
-  }
-
-  input.addEventListener("input", function () {
-    clearTimeout(debounceTimer);
-    const query = input.value.trim();
-
-    if (type === "origin") selectedOrigin = null;
-    if (type === "destination") selectedDestination = null;
-
-    clearSuggestions();
-
-    if (query.length < 3) return;
-
-    suggestions.style.display = "block";
-    suggestions.innerHTML = `<div class="suggestion-item">Buscando...</div>`;
-
-    debounceTimer = setTimeout(async () => {
-      try {
-        const results = await searchLocation(query);
-
-        if (!results || results.length === 0) {
-          suggestions.innerHTML = `<div class="suggestion-item">No se encontraron resultados</div>`;
-          suggestions.style.display = "block";
-          return;
-        }
-
+      function clearSuggestions() {
         suggestions.innerHTML = "";
-
-        results.forEach(place => {
-          const label = place?.properties?.label || "Ubicación sin nombre";
-
-          const div = document.createElement("div");
-          div.className = "suggestion-item";
-          div.textContent = label;
-
-          div.addEventListener("mousedown", function (event) {
-            event.preventDefault();
-
-            input.value = label;
-
-            const selected = {
-              label,
-              lng: place.geometry.coordinates[0],
-              lat: place.geometry.coordinates[1]
-            };
-
-            if (type === "origin") selectedOrigin = selected;
-            if (type === "destination") selectedDestination = selected;
-
-            clearSuggestions();
-          });
-
-          suggestions.appendChild(div);
-        });
-
-        suggestions.style.display = "block";
-
-      } catch (error) {
-        console.error("Autocomplete error:", error);
-        suggestions.innerHTML = `<div class="suggestion-item">Error al cargar sugerencias</div>`;
-        suggestions.style.display = "block";
+        suggestions.style.display = "none";
       }
-    }, 300);
-  });
 
-  input.addEventListener("blur", function () {
-    setTimeout(() => {
-      clearSuggestions();
-    }, 200);
-  });
+      input.addEventListener("input", function () {
+        clearTimeout(debounceTimer);
+        const query = input.value.trim();
 
-  input.addEventListener("focus", function () {
-    if (suggestions.innerHTML.trim() !== "") {
-      suggestions.style.display = "block";
+        if (type === "origin") selectedOrigin = null;
+        if (type === "destination") selectedDestination = null;
+
+        clearSuggestions();
+
+        if (query.length < 3) return;
+
+        debounceTimer = setTimeout(async () => {
+          try {
+            const results = await searchLocation(query);
+
+            if (!results || results.length === 0) {
+              suggestions.innerHTML = `<div class="suggestion-item">No se encontraron resultados</div>`;
+              suggestions.style.display = "block";
+              return;
+            }
+
+            suggestions.innerHTML = "";
+
+            results.forEach(place => {
+              const div = document.createElement("div");
+              div.className = "suggestion-item";
+              div.textContent = place.properties.label;
+
+              div.addEventListener("mousedown", function (event) {
+                event.preventDefault();
+
+                const selected = {
+                  label: place.properties.label,
+                  lng: place.geometry.coordinates[0],
+                  lat: place.geometry.coordinates[1]
+                };
+
+                input.value = selected.label;
+
+                if (type === "origin") selectedOrigin = selected;
+                if (type === "destination") selectedDestination = selected;
+
+                clearSuggestions();
+              });
+
+              suggestions.appendChild(div);
+            });
+
+            suggestions.style.display = "block";
+          } catch (error) {
+            console.error("Autocomplete error:", error);
+            suggestions.innerHTML = `<div class="suggestion-item">Error al cargar sugerencias</div>`;
+            suggestions.style.display = "block";
+          }
+        }, 300);
+      });
+
+      input.addEventListener("blur", function () {
+        setTimeout(() => clearSuggestions(), 200);
+      });
     }
-  });
-}
 
     function haversineDistance(lat1, lon1, lat2, lon2) {
       const R = 6371;
@@ -658,7 +641,6 @@
 
           drawStraightLine();
           calculationType = "Distancia aérea";
-
         } else if (transport === "tren" || transport === "metro") {
           oneWayDistance = haversineDistance(
             selectedOrigin.lat,
@@ -669,7 +651,6 @@
 
           drawStraightLine();
           calculationType = "Estimación geográfica ajustada";
-
         } else if (transport === "caminando") {
           oneWayDistance = haversineDistance(
             selectedOrigin.lat,
@@ -680,7 +661,6 @@
 
           drawStraightLine();
           calculationType = "Distancia lineal";
-
         } else if (isRoadBasedTransport(transport)) {
           const routeData = await getRoadRouteDistance("driving-car");
           oneWayDistance = routeData.distanceKm;
@@ -692,7 +672,6 @@
 
           drawGeoJsonRoute(routeData.geojson);
           calculationType = "Ruta por carretera";
-
         } else {
           oneWayDistance = haversineDistance(
             selectedOrigin.lat,
@@ -719,9 +698,9 @@
           transportLabel: transportLabels[transport] || transport,
           tripType,
           calculationType,
-          distanceOneWayKm: roundTo2(oneWayDistance),
-          distanceFinalKm: roundTo2(finalDistance),
-          emissionsKg: roundTo2(emissionsKg)
+          distanceOneWayKm: Math.round(oneWayDistance * 100) / 100,
+          distanceFinalKm: Math.round(finalDistance * 100) / 100,
+          emissionsKg: Math.round(emissionsKg * 100) / 100
         };
 
         resultEl.style.display = "block";
@@ -773,6 +752,11 @@
       selectedOrigin = null;
       selectedDestination = null;
       clearMapLayers();
+
+      document.getElementById("origenSuggestions").innerHTML = "";
+      document.getElementById("destinoSuggestions").innerHTML = "";
+      document.getElementById("origenSuggestions").style.display = "none";
+      document.getElementById("destinoSuggestions").style.display = "none";
     }
 
     function renumberLegs() {
@@ -797,8 +781,8 @@
 
       tripStats.innerHTML = `
         <strong>Tramos:</strong> ${footprint.tripLegs.length}<br>
-        <strong>Distancia acumulada:</strong> ${roundTo2(totalDistance)} km<br>
-        <strong>Emisiones acumuladas:</strong> ${roundTo2(totalEmissions)} kg CO₂e
+        <strong>Distancia acumulada:</strong> ${Math.round(totalDistance * 100) / 100} km<br>
+        <strong>Emisiones acumuladas:</strong> ${Math.round(totalEmissions * 100) / 100} kg CO₂e
       `;
 
       tripList.innerHTML = footprint.tripLegs.map((leg) => `
@@ -828,9 +812,9 @@
         return;
       }
 
-      footprint.mainTripKg = roundTo2(
-        footprint.tripLegs.reduce((sum, leg) => sum + leg.emissionsKg, 0)
-      );
+      footprint.mainTripKg = Math.round(
+        footprint.tripLegs.reduce((sum, leg) => sum + leg.emissionsKg, 0) * 100
+      ) / 100;
 
       nextStep(3);
     }
@@ -871,10 +855,10 @@
     }
 
     function renderResults() {
-      const total = roundTo2(footprint.totalKg);
-      const mainTrip = roundTo2(footprint.mainTripKg);
-      const accommodation = roundTo2(footprint.accommodationKg);
-      const localTransport = roundTo2(footprint.localTransportKg);
+      const total = Math.round(footprint.totalKg * 100) / 100;
+      const mainTrip = Math.round(footprint.mainTripKg * 100) / 100;
+      const accommodation = Math.round(footprint.accommodationKg * 100) / 100;
+      const localTransport = Math.round(footprint.localTransportKg * 100) / 100;
 
       const resultEl = document.getElementById("resultado");
       const certificateEl = document.getElementById("certificado");
@@ -900,46 +884,41 @@
         </div>
       `).join("");
 
-     breakdownEl.innerHTML = `
-  <strong>Desglose estimado:</strong><br><br>
-  <strong>Viaje multi-leg</strong><br>
-  ${legsHtml}
-  <strong>Emisiones viaje total:</strong> ${mainTrip} kg CO₂e<br><br>
-  <strong>Alojamiento</strong><br>
-  Emisiones alojamiento: ${accommodation} kg CO₂e<br><br>
-  <strong>Movilidad local adicional</strong><br>
-  Emisiones movilidad local: ${localTransport} kg CO₂e<br>
-  <hr>
-  <strong>Total:</strong> ${total} kg CO₂e
+      breakdownEl.innerHTML = `
+        <strong>Desglose estimado:</strong><br><br>
+        <strong>Viaje multi-leg</strong><br>
+        ${legsHtml}
+        <strong>Emisiones viaje total:</strong> ${mainTrip} kg CO₂e<br><br>
+        <strong>Alojamiento</strong><br>
+        Emisiones alojamiento: ${accommodation} kg CO₂e<br><br>
+        <strong>Movilidad local adicional</strong><br>
+        Emisiones movilidad local: ${localTransport} kg CO₂e<br>
+        <hr>
+        <strong>Total:</strong> ${total} kg CO₂e
 
-  <div class="small" style="margin-top:14px; line-height:1.6; background:#f7fbf7; border:1px solid #dbe8db; border-radius:10px; padding:12px;">
-    <strong>Metodología de cálculo</strong><br>
-    Esta herramienta ofrece una estimación orientativa de huella de carbono expresada en kg CO₂e.<br><br>
+        <div class="small" style="margin-top:14px; line-height:1.6; background:#f7fbf7; border:1px solid #dbe8db; border-radius:10px; padding:12px;">
+          <strong>Metodología de cálculo</strong><br>
+          Esta herramienta ofrece una estimación orientativa de huella de carbono expresada en kg CO₂e.<br><br>
 
-    <strong>Cómo se calcula la distancia</strong><br>
-    - Avión: distancia aérea entre origen y destino.<br>
-    - Coche, taxi y autobús: ruta por carretera.<br>
-    - Tren y metro: estimación geográfica ajustada a partir de la distancia entre puntos.<br>
-    - Caminando o bicicleta: 0 emisiones.<br><br>
+          <strong>Cómo se calcula la distancia</strong><br>
+          - Avión: distancia aérea entre origen y destino.<br>
+          - Coche, taxi y autobús: ruta por carretera.<br>
+          - Tren y metro: estimación geográfica ajustada a partir de la distancia entre puntos.<br>
+          - Caminando o bicicleta: 0 emisiones.<br><br>
 
-    <strong>Cómo se calculan las emisiones</strong><br>
-    Las emisiones se estiman multiplicando la distancia recorrida por un factor simplificado de emisión según el medio de transporte.<br><br>
+          <strong>Cómo se calculan las emisiones</strong><br>
+          Las emisiones se estiman multiplicando la distancia recorrida por un factor simplificado de emisión según el medio de transporte.<br><br>
 
-    <strong>Alojamiento</strong><br>
-    El alojamiento se estima mediante un factor fijo por noche según la categoría del hotel.<br><br>
+          <strong>Alojamiento</strong><br>
+          El alojamiento se estima mediante un factor fijo por noche según la categoría del hotel.<br><br>
 
-    <strong>Movilidad local</strong><br>
-    La movilidad local adicional se calcula a partir de la distancia diaria, el número de días y el medio de transporte seleccionado.<br><br>
+          <strong>Movilidad local</strong><br>
+          La movilidad local adicional se calcula a partir de la distancia diaria, el número de días y el medio de transporte seleccionado.<br><br>
 
-    <strong>Importante</strong><br>
-    Este resultado es orientativo y simplificado. No sustituye un cálculo oficial, auditado o válido para reporting formal.
-  </div>
-`;
+          <strong>Importante</strong><br>
+          Este resultado es orientativo y simplificado. No sustituye un cálculo oficial, auditado o válido para reporting formal.
+        </div>
       `;
-    }
-
-    function roundTo2(value) {
-      return Math.round(value * 100) / 100;
     }
 
     setupAutocomplete("origenInput", "origenSuggestions", "origin");

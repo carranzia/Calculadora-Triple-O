@@ -11,6 +11,8 @@ app.use(express.static("public"));
 const PORT = process.env.PORT || 3000;
 const ORS_API_KEY = process.env.ORS_API_KEY;
 
+console.log("ORS key loaded:", !!ORS_API_KEY);
+
 app.get("/api/geocode", async (req, res) => {
   try {
     const text = req.query.text;
@@ -19,12 +21,17 @@ app.get("/api/geocode", async (req, res) => {
       return res.status(400).json({ error: "Missing text parameter" });
     }
 
+    if (!ORS_API_KEY) {
+      return res.status(500).json({ error: "ORS_API_KEY no configurada en el servidor" });
+    }
+
     const url = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(text)}&size=5`;
 
     const response = await fetch(url);
     const data = await response.json();
 
     if (!response.ok) {
+      console.error("Geocode API error:", data);
       return res.status(response.status).json(data);
     }
 
@@ -39,6 +46,14 @@ app.post("/api/route", async (req, res) => {
   try {
     const { profile, coordinates } = req.body;
 
+    if (!ORS_API_KEY) {
+      return res.status(500).json({ error: "ORS_API_KEY no configurada en el servidor" });
+    }
+
+    if (!profile || !coordinates) {
+      return res.status(400).json({ error: "Missing profile or coordinates" });
+    }
+
     const url = `https://api.openrouteservice.org/v2/directions/${profile}/geojson`;
 
     const response = await fetch(url, {
@@ -51,6 +66,11 @@ app.post("/api/route", async (req, res) => {
     });
 
     const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Route API error:", data);
+      return res.status(response.status).json(data);
+    }
 
     res.json(data);
 

@@ -867,20 +867,41 @@
         </div>
       `).join("");
 
-      breakdownEl.innerHTML = `
-        <strong>Desglose estimado:</strong><br><br>
-        <strong>Viaje multi-leg</strong><br>
-        ${legsHtml}
-        <strong>Emisiones viaje total:</strong> ${mainTrip} kg CO₂e<br><br>
-        <strong>Alojamiento</strong><br>
-        Emisiones alojamiento: ${accommodation} kg CO₂e<br><br>
-        <strong>Movilidad local adicional</strong><br>
-        Emisiones movilidad local: ${localTransport} kg CO₂e<br>
-        <hr>
-        <strong>Total:</strong> ${total} kg CO₂e
-        <div class="small" style="margin-top:10px;">
-          Estimación orientativa basada en factores simplificados expresados en kg CO₂e por pasajero-km y en supuestos de distancia según el medio de transporte. Para reporting formal conviene validar factores, fuentes y metodología.
-        </div>
+     breakdownEl.innerHTML = `
+  <strong>Desglose estimado:</strong><br><br>
+  <strong>Viaje multi-leg</strong><br>
+  ${legsHtml}
+  <strong>Emisiones viaje total:</strong> ${mainTrip} kg CO₂e<br><br>
+  <strong>Alojamiento</strong><br>
+  Emisiones alojamiento: ${accommodation} kg CO₂e<br><br>
+  <strong>Movilidad local adicional</strong><br>
+  Emisiones movilidad local: ${localTransport} kg CO₂e<br>
+  <hr>
+  <strong>Total:</strong> ${total} kg CO₂e
+
+  <div class="small" style="margin-top:14px; line-height:1.6; background:#f7fbf7; border:1px solid #dbe8db; border-radius:10px; padding:12px;">
+    <strong>Metodología de cálculo</strong><br>
+    Esta herramienta ofrece una estimación orientativa de huella de carbono expresada en kg CO₂e.<br><br>
+
+    <strong>Cómo se calcula la distancia</strong><br>
+    - Avión: distancia aérea entre origen y destino.<br>
+    - Coche, taxi y autobús: ruta por carretera.<br>
+    - Tren y metro: estimación geográfica ajustada a partir de la distancia entre puntos.<br>
+    - Caminando o bicicleta: 0 emisiones.<br><br>
+
+    <strong>Cómo se calculan las emisiones</strong><br>
+    Las emisiones se estiman multiplicando la distancia recorrida por un factor simplificado de emisión según el medio de transporte.<br><br>
+
+    <strong>Alojamiento</strong><br>
+    El alojamiento se estima mediante un factor fijo por noche según la categoría del hotel.<br><br>
+
+    <strong>Movilidad local</strong><br>
+    La movilidad local adicional se calcula a partir de la distancia diaria, el número de días y el medio de transporte seleccionado.<br><br>
+
+    <strong>Importante</strong><br>
+    Este resultado es orientativo y simplificado. No sustituye un cálculo oficial, auditado o válido para reporting formal.
+  </div>
+`;
       `;
     }
 

@@ -85,15 +85,18 @@
     .danger-btn:hover {
       background: #912018;
     }
+	.suggestions {
+  	display: none;
+ 	border: 1px solid #ddd;
+  	background: white;
+  	border-radius: 8px;
+  	max-height: 180px;
+  	overflow-y: auto;
+  	margin-bottom: 10px;
+  	position: relative;
+  	z-index: 50;
 
-    .suggestions {
-      border: 1px solid #ddd;
-      background: white;
-      border-radius: 8px;
-      max-height: 180px;
-      overflow-y: auto;
-      margin-bottom: 10px;
-    }
+        }
 
     .suggestion-item {
       padding: 8px 10px;
@@ -487,60 +490,90 @@
     }
 
     function setupAutocomplete(inputId, suggestionsId, type) {
-      const input = document.getElementById(inputId);
-      const suggestions = document.getElementById(suggestionsId);
-      let debounceTimer = null;
+  const input = document.getElementById(inputId);
+  const suggestions = document.getElementById(suggestionsId);
+  let debounceTimer = null;
 
-      input.addEventListener("input", function () {
-        clearTimeout(debounceTimer);
-        const query = input.value.trim();
+  function clearSuggestions() {
+    suggestions.innerHTML = "";
+    suggestions.style.display = "none";
+  }
 
-        if (type === "origin") selectedOrigin = null;
-        if (type === "destination") selectedDestination = null;
+  input.addEventListener("input", function () {
+    clearTimeout(debounceTimer);
+    const query = input.value.trim();
+
+    if (type === "origin") selectedOrigin = null;
+    if (type === "destination") selectedDestination = null;
+
+    clearSuggestions();
+
+    if (query.length < 3) return;
+
+    suggestions.style.display = "block";
+    suggestions.innerHTML = `<div class="suggestion-item">Buscando...</div>`;
+
+    debounceTimer = setTimeout(async () => {
+      try {
+        const results = await searchLocation(query);
+
+        if (!results || results.length === 0) {
+          suggestions.innerHTML = `<div class="suggestion-item">No se encontraron resultados</div>`;
+          suggestions.style.display = "block";
+          return;
+        }
 
         suggestions.innerHTML = "";
-        if (query.length < 3) return;
 
-        debounceTimer = setTimeout(async () => {
-          try {
-            const results = await searchLocation(query);
-            suggestions.innerHTML = "";
+        results.forEach(place => {
+          const label = place?.properties?.label || "Ubicación sin nombre";
 
-            results.forEach(place => {
-              const div = document.createElement("div");
-              div.className = "suggestion-item";
-              div.textContent = place.properties.label;
+          const div = document.createElement("div");
+          div.className = "suggestion-item";
+          div.textContent = label;
 
-              div.onclick = function () {
-                input.value = place.properties.label;
+          div.addEventListener("mousedown", function (event) {
+            event.preventDefault();
 
-                const selected = {
-                  label: place.properties.label,
-                  lng: place.geometry.coordinates[0],
-                  lat: place.geometry.coordinates[1]
-                };
+            input.value = label;
 
-                if (type === "origin") selectedOrigin = selected;
-                if (type === "destination") selectedDestination = selected;
+            const selected = {
+              label,
+              lng: place.geometry.coordinates[0],
+              lat: place.geometry.coordinates[1]
+            };
 
-                suggestions.innerHTML = "";
-              };
+            if (type === "origin") selectedOrigin = selected;
+            if (type === "destination") selectedDestination = selected;
 
-              suggestions.appendChild(div);
-            });
-          } catch (error) {
-            console.error(error);
-            suggestions.innerHTML = `<div class="suggestion-item">No se pudieron cargar sugerencias</div>`;
-          }
-        }, 300);
-      });
+            clearSuggestions();
+          });
 
-      document.addEventListener("click", function (event) {
-        if (!suggestions.contains(event.target) && event.target !== input) {
-          suggestions.innerHTML = "";
-        }
-      });
+          suggestions.appendChild(div);
+        });
+
+        suggestions.style.display = "block";
+
+      } catch (error) {
+        console.error("Autocomplete error:", error);
+        suggestions.innerHTML = `<div class="suggestion-item">Error al cargar sugerencias</div>`;
+        suggestions.style.display = "block";
+      }
+    }, 300);
+  });
+
+  input.addEventListener("blur", function () {
+    setTimeout(() => {
+      clearSuggestions();
+    }, 200);
+  });
+
+  input.addEventListener("focus", function () {
+    if (suggestions.innerHTML.trim() !== "") {
+      suggestions.style.display = "block";
     }
+  });
+}
 
     function haversineDistance(lat1, lon1, lat2, lon2) {
       const R = 6371;

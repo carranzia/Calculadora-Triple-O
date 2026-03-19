@@ -231,9 +231,6 @@
     <div class="card">
       <h3>Añadir un tramo</h3>
 
-      <label for="legName">Nombre del tramo</label>
-      <input id="legName" type="text" placeholder="Ej: Casa → Aeropuerto" />
-
       <label for="origenInput">Origen</label>
       <input id="origenInput" type="text" placeholder="Introduce ciudad o dirección" autocomplete="off" />
       <div id="origenSuggestions" class="suggestions"></div>
@@ -601,7 +598,6 @@
       try {
         const transport = document.getElementById("transporte1").value;
         const tripType = document.getElementById("idaVuelta").value;
-        const legName = document.getElementById("legName").value.trim() || "Tramo sin nombre";
         const resultEl = document.getElementById("distanceResult");
 
         if (!selectedOrigin || !selectedDestination) {
@@ -675,10 +671,11 @@
         const finalDistance = tripType === "ida-vuelta" ? oneWayDistance * 2 : oneWayDistance;
         const factor = emissionFactors.transport[transport] || 0;
         const emissionsKg = finalDistance * factor;
+        const legNumber = Math.min(footprint.tripLegs.length + 1, 99);
 
         currentLegDraft = {
           id: Date.now(),
-          name: legName,
+          number: legNumber,
           originLabel: selectedOrigin.label,
           destinationLabel: selectedDestination.label,
           transport,
@@ -692,7 +689,7 @@
 
         resultEl.style.display = "block";
         resultEl.innerHTML = `
-          <div><strong>Tramo:</strong> ${currentLegDraft.name}</div>
+          <div><strong>Tramo ${currentLegDraft.number}</strong></div>
           <div><strong>Origen:</strong> ${currentLegDraft.originLabel}</div>
           <div><strong>Destino:</strong> ${currentLegDraft.destinationLabel}</div>
           <div><strong>Medio:</strong> ${currentLegDraft.transportLabel}</div>
@@ -703,8 +700,8 @@
           <div class="route-badge">${tripType === "ida-vuelta" ? "Ida y vuelta" : "Solo ida"}</div>
         `;
       } catch (error) {
-        console.error(error);
-        alert("No se pudo calcular el tramo. Revisa la configuración o la selección de ubicaciones.");
+        console.error("Error al calcular tramo:", error);
+        alert(`No se pudo calcular el tramo: ${error.message || "Error desconocido"}`);
       }
     }
 
@@ -714,7 +711,13 @@
         return;
       }
 
+      if (footprint.tripLegs.length >= 99) {
+        alert("Se ha alcanzado el máximo de 99 tramos.");
+        return;
+      }
+
       footprint.tripLegs.push({ ...currentLegDraft });
+      renumberLegs();
       refreshTripList();
       clearLegForm();
       currentLegDraft = null;
@@ -725,7 +728,6 @@
     }
 
     function clearLegForm() {
-      document.getElementById("legName").value = "";
       document.getElementById("origenInput").value = "";
       document.getElementById("destinoInput").value = "";
       document.getElementById("transporte1").value = "petrol";
@@ -734,6 +736,13 @@
       selectedOrigin = null;
       selectedDestination = null;
       clearMapLayers();
+    }
+
+    function renumberLegs() {
+      footprint.tripLegs = footprint.tripLegs.map((leg, index) => ({
+        ...leg,
+        number: index + 1
+      }));
     }
 
     function refreshTripList() {
@@ -755,9 +764,9 @@
         <strong>Emisiones acumuladas:</strong> ${roundTo2(totalEmissions)} kg CO₂e
       `;
 
-      tripList.innerHTML = footprint.tripLegs.map((leg, index) => `
+      tripList.innerHTML = footprint.tripLegs.map((leg) => `
         <div class="trip-item">
-          <strong>Tramo ${index + 1}: ${leg.name}</strong><br>
+          <strong>Tramo ${leg.number}</strong><br>
           ${leg.originLabel} → ${leg.destinationLabel}<br>
           Medio: ${leg.transportLabel}<br>
           Tipo: ${leg.tripType === "ida-vuelta" ? "Ida y vuelta" : "Solo ida"}<br>
@@ -772,6 +781,7 @@
 
     function removeLeg(id) {
       footprint.tripLegs = footprint.tripLegs.filter(leg => leg.id !== id);
+      renumberLegs();
       refreshTripList();
     }
 
@@ -843,9 +853,9 @@
 
       certificateEl.innerHTML = `<strong>Perfil de huella: ${level}</strong>`;
 
-      const legsHtml = footprint.tripLegs.map((leg, index) => `
+      const legsHtml = footprint.tripLegs.map((leg) => `
         <div style="margin-bottom:12px;">
-          <strong>Tramo ${index + 1}: ${leg.name}</strong><br>
+          <strong>Tramo ${leg.number}</strong><br>
           ${leg.originLabel} → ${leg.destinationLabel}<br>
           Medio: ${leg.transportLabel}<br>
           Distancia aplicada: ${leg.distanceFinalKm} km<br>

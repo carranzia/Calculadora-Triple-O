@@ -685,8 +685,18 @@
         }
 
         const finalDistance = tripType === "ida-vuelta" ? oneWayDistance * 2 : oneWayDistance;
-        const factor = emissionFactors.transport[transport] || 0;
+        let factor;
+        if (transport === "avion") {
+          factor = oneWayDistance < 1500 ? 0.26 : 0.20;
+          calculationType = oneWayDistance < 1500
+            ? "Distancia aérea – corto radio (con forzamiento radiativo)"
+            : "Distancia aérea – largo radio (con forzamiento radiativo)";
+        } else {
+          factor = emissionFactors.transport[transport] || 0;
+        }
         const emissionsKg = finalDistance * factor;
+
+
         const legNumber = Math.min(footprint.tripLegs.length + 1, 99);
 
         currentLegDraft = {
@@ -901,7 +911,7 @@
           Esta herramienta ofrece una estimación orientativa de huella de carbono expresada en kg CO₂e.<br><br>
 
           <strong>Cómo se calcula la distancia</strong><br>
-          - Avión: distancia aérea entre origen y destino.<br>
+          - Avión: distancia aérea entre origen y destino. Se aplica factor diferenciado por corto radio (&lt;1.500 km, 0,26 kg CO₂e/km) o largo radio (≥1.500 km, 0,20 kg CO₂e/km), incluyendo forzamiento radiativo. Fuente: DEFRA 2023.<br>
           - Coche, taxi y autobús: ruta por carretera.<br>
           - Tren y metro: estimación geográfica ajustada a partir de la distancia entre puntos.<br>
           - Caminando o bicicleta: 0 emisiones.<br><br>

@@ -1,0 +1,33 @@
+ID;Hora de inicio;Hora de finalización;Correo electrónico;Nombre;Cuantos trayectos ha realizado para llegar al evento?;Indica el punto de inicio del trayecto;Que medio o medios de transporte has utilizado?;Vienes de fuera de la ciudad?;Has necsitado alojamiento?;Que tipo de alojamiento has utilizado?;Cuanto tiempo has invertido en llegar desde tu alojamiento al evento?;Que medio o medios de transporte has utilizado?2
+1;2/24/26 20:16:27;2/24/26 20:17:25;anonymous;;2 Trayectos;Calle San Juan de Ortega 52 ;Taxi;No;;;;
+2;2/25/26 15:45:13;2/25/26 15:45:53;anonymous;;3 Trayectos;puerta del sol madrid;Taxi;Sí;Si;Apartamento;3;Taxi
+3;2/25/26 18:45:27;2/25/26 18:46:06;anonymous;;1 Trayecto;Salamanca ;Vehículo gasolina;Sí;No;;;
+4;2/25/26 18:45:48;2/25/26 18:46:14;anonymous;;1 Trayecto;El encinar de los Reyes ;Vehículo eléctrico;No;;;;
+5;2/25/26 18:46:48;2/25/26 18:47:04;anonymous;;2 Trayectos;Puerta del ángel ;Tren;No;;;;
+6;2/25/26 18:46:29;2/25/26 18:47:05;anonymous;;1 Trayecto;Madrid ;Vehículo compartido (carsharing);No;;;;
+7;2/25/26 18:46:39;2/25/26 18:47:39;anonymous;;1 Trayecto;Aravaca;Vehículo diesel;No;;;;
+8;2/25/26 18:47:29;2/25/26 18:48:10;anonymous;;1 Trayecto;Conde casal;Tren;No;;;;
+9;2/25/26 18:47:34;2/25/26 18:52:18;anonymous;;3 Trayectos;Vallecas;Vehículo eléctrico;No;;;;
+10;2/25/26 19:26:55;2/25/26 19:27:44;anonymous;;1 Trayecto;Nuevos ministerios ;Metro;No;;;;
+11;2/25/26 19:47:15;2/25/26 19:47:43;anonymous;;1 Trayecto;Getafe;Tren;No;;;;
+12;2/25/26 19:46:46;2/25/26 19:48:06;anonymous;;1 Trayecto;Retiro ;Tren;No;;;;
+13;2/25/26 19:47:34;2/25/26 19:48:18;anonymous;;1 Trayecto;Corabanchem;Metro;No;;;;
+14;2/25/26 19:49:12;2/25/26 19:50:11;anonymous;;2 Trayectos;Aranjuez ;Tren;No;;;;
+15;2/25/26 21:10:19;2/25/26 21:10:38;anonymous;;1 Trayecto;Madrid;Vehículo eléctrico;No;;;;
+16;2/25/26 21:11:51;2/25/26 21:12:43;anonymous;;1 Trayecto;Caramuel;Taxi;No;;;;
+17;2/25/26 21:12:41;2/25/26 21:13:15;anonymous;;1 Trayecto; Coche;Vehículo híbrido;No;;;;
+18;2/25/26 21:12:12;2/25/26 21:13:57;anonymous;;2 Trayectos;Fuencarral ;Tren;No;;;;
+19;2/25/26 21:13:51;2/25/26 21:15:25;anonymous;;2 Trayectos;Aravaca;Bus metro;No;;;;
+20;2/25/26 21:15:24;2/25/26 21:15:40;anonymous;;1 Trayecto;Núñez de Balboa ;Vehículo híbrido;No;;;;
+21;2/25/26 21:15:20;2/25/26 21:15:48;anonymous;;1 Trayecto;Legazpi;Tren;No;;;;
+22;2/25/26 21:15:27;2/25/26 21:16:02;anonymous;;1 Trayecto;Metro Legazpi;Tren;No;;;;
+23;2/25/26 21:15:39;2/25/26 21:16:08;anonymous;;1 Trayecto;Casa;A pie;No;;;;
+24;2/25/26 21:17:23;2/25/26 21:17:45;anonymous;;1 Trayecto;Villamantilla ;Vehículo diesel;No;;;;
+25;2/25/26 21:20:29;2/25/26 21:20:59;anonymous;;1 Trayecto;Madrid;Tren;No;;;;
+26;2/25/26 21:21:13;2/25/26 21:21:59;anonymous;;1 Trayecto;Calle prim;A pie;No;;;;
+27;2/25/26 21:22:01;2/25/26 21:22:53;anonymous;;2 Trayectos;Canillejas calle barbastro;Metro;No;;;;
+28;2/25/26 21:29:30;2/25/26 21:29:55;anonymous;;1 Trayecto;Coche ;Vehículo gasolina;No;;;;
+29;2/25/26 21:29:36;2/25/26 21:30:03;anonymous;;1 Trayecto;Casa ;Vehículo gasolina;No;;;;
+30;2/25/26 21:29:54;2/25/26 21:30:18;anonymous;;1 Trayecto;Lavapiés ;A pie;No;;;;
+31;2/26/26 9:20:01;2/26/26 9:20:28;anonymous;;1 Trayecto;Móstoles ;Tren;No;;;;
+32;2/26/26 9:21:20;2/26/26 9:22:06;anonymous;;2 Trayectos;Mejorada del campo;Vehículo híbrido;No;;;;

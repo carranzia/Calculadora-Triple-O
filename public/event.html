@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resumen del evento – Triple O</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f0f8f0;
+      color: #1f1f1f;
+    }
+    h1, h2 { color: #006400; margin-top: 0; }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .stat-box {
+      background: #f7fbf7;
+      border: 1px solid #dbe8db;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-val {
+      font-size: 26px;
+      font-weight: bold;
+      color: #006400;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: #555;
+      margin-top: 4px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+    .badge-green { background: #d1fae5; color: #065f46; }
+    .badge-gray { background: #e5e7eb; color: #6b7280; }
+    .progress-bar-bg {
+      background: #e5e7eb;
+      border-radius: 8px;
+      height: 12px;
+      margin: 8px 0;
+      overflow: hidden;
+    }
+    .progress-bar { height: 12px; background: #28a745; border-radius: 8px; transition: width 0.5s; }
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+      font-size: 15px;
+    }
+    .small { font-size: 13px; color: #666; }
+    #refreshMsg { font-size: 13px; color: #888; text-align: center; margin-top: 10px; }
+    #errorMsg { color: #b42318; text-align: center; padding: 20px; }
+    .spinner { text-align: center; padding: 40px; color: #666; font-style: italic; }
+    button {
+      background: #5f6f5f;
+      color: white;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button:hover { background: #4f5d4f; }
+  </style>
+</head>
+<body>
+  <div style="text-align:center; margin-bottom:20px;">
+    <img src="/logo-017.svg" alt="Logo O17" style="height:80px; width:auto;">
+  </div>
+
+  <div id="spinner" class="spinner">Cargando datos del evento...</div>
+  <div id="errorMsg" style="display:none;"></div>
+
+  <div id="contenido" style="display:none;">
+    <div class="card">
+      <h1 id="nombreEvento"></h1>
+      <div id="descripcionEvento" style="color:#555; margin-bottom:8px;"></div>
+      <div class="small">
+        Código: <strong id="codigoEvento"></strong>
+        <span id="badgeActivo" class="badge"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Huella agregada del evento</h2>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-val" id="statParticipantes">0</div>
+          <div class="stat-label">Participantes</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statTotal">0 kg</div>
+          <div class="stat-label">Total CO₂e</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statMedia">0 kg</div>
+          <div class="stat-label">Media por persona</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Desglose de emisiones</h2>
+
+      <div class="breakdown-row">
+        <span>Transporte</span>
+        <span id="totalTransporte">0 kg</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar" id="barTransporte" style="width:0%"></div>
+      </div>
+
+      <div class="breakdown-row">
+        <span>Alojamiento</span>
+        <span id="totalAlojamiento">0 kg</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar" id="barAlojamiento" style="width:0%"></div>
+      </div>
+
+      <div class="breakdown-row" id="otrosRow" style="display:none;">
+        <span>Otros (movilidad local)</span>
+        <span id="totalOtros">0 kg</span>
+      </div>
+      <div class="progress-bar-bg" id="barOtrosBg" style="display:none;">
+        <div class="progress-bar" id="barOtros" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <button onclick="cargar()">Actualizar datos</button>
+      <div id="refreshMsg"></div>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <div class="small" style="text-align:center; line-height:1.6;">
+        Datos en tiempo real · Fuente: Objetivo 17 – Triple O<br>
+        Factores DEFRA 2023 con forzamiento radiativo para vuelos
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const codigo = params.get("codigo");
+    let refreshInterval = null;
+
+    if (!codigo) {
+      document.getElementById("spinner").style.display = "none";
+      document.getElementById("errorMsg").style.display = "block";
+      document.getElementById("errorMsg").textContent = "No se ha indicado ningún código de evento en la URL.";
+    } else {
+      cargar();
+      refreshInterval = setInterval(cargar, 30000);
+    }
+
+    async function cargar() {
+      try {
+        const res = await fetch(`/api/evento/${encodeURIComponent(codigo)}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          document.getElementById("spinner").style.display = "none";
+          document.getElementById("errorMsg").style.display = "block";
+          document.getElementById("errorMsg").textContent = data.error || "Error al cargar el evento.";
+          return;
+        }
+
+        renderizar(data);
+      } catch (err) {
+        document.getElementById("errorMsg").style.display = "block";
+        document.getElementById("errorMsg").textContent = "Error de red: " + err.message;
+      }
+    }
+
+    function renderizar({ evento, stats }) {
+      document.getElementById("spinner").style.display = "none";
+      document.getElementById("contenido").style.display = "block";
+
+      document.getElementById("nombreEvento").textContent = evento.nombre;
+      document.getElementById("codigoEvento").textContent = evento.codigo;
+      if (evento.descripcion) {
+        document.getElementById("descripcionEvento").textContent = evento.descripcion;
+      }
+
+      const badge = document.getElementById("badgeActivo");
+      badge.textContent = evento.activo ? "Activo" : "Cerrado";
+      badge.className = "badge " + (evento.activo ? "badge-green" : "badge-gray");
+
+      document.getElementById("statParticipantes").textContent = stats.participantes;
+      document.getElementById("statTotal").textContent = stats.totalKg + " kg";
+      document.getElementById("statMedia").textContent = stats.avgKg + " kg";
+
+      document.getElementById("totalTransporte").textContent = stats.totalTransporte + " kg";
+      document.getElementById("totalAlojamiento").textContent = stats.totalAlojamiento + " kg";
+
+      const otros = Math.round((stats.totalKg - stats.totalTransporte - stats.totalAlojamiento) * 100) / 100;
+      if (otros > 0) {
+        document.getElementById("otrosRow").style.display = "flex";
+        document.getElementById("barOtrosBg").style.display = "block";
+        document.getElementById("totalOtros").textContent = otros + " kg";
+      }
+
+      const total = stats.totalKg || 1;
+      document.getElementById("barTransporte").style.width = Math.min(100, (stats.totalTransporte / total * 100)).toFixed(1) + "%";
+      document.getElementById("barAlojamiento").style.width = Math.min(100, (stats.totalAlojamiento / total * 100)).toFixed(1) + "%";
+      if (otros > 0) {
+        document.getElementById("barOtros").style.width = Math.min(100, (otros / total * 100)).toFixed(1) + "%";
+      }
+
+      const now = new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+      document.getElementById("refreshMsg").textContent = `Última actualización: ${now} · Se actualiza cada 30 s`;
+    }
+  </script>
+</body>
+</html>

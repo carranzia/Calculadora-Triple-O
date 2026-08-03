@@ -219,6 +219,11 @@
   </style>
 </head>
 <body>
+  <div id="eventoBanner" style="display:none; background:#d1fae5; border:1px solid #6ee7b7; border-radius:12px; padding:14px 18px; margin-bottom:20px; text-align:center;">
+    <div style="font-weight:bold; color:#065f46; font-size:16px;" id="eventoBannerNombre"></div>
+    <div style="font-size:13px; color:#047857; margin-top:4px;">Rellena la calculadora y envía tu huella al terminar.</div>
+  </div>
+
   <div style="text-align:center; margin-bottom:30px;">
     <img src="/logo-017.svg" alt="Logo O17" style="height:120px; width:auto; display:block; margin:0 auto 15px auto;">
     <div style="font-size:30px; font-weight:bold; color:#006400;">
@@ -332,7 +337,16 @@
     <div id="resultado"></div>
     <div id="certificado"></div>
     <div id="desglose"></div>
-    <button onclick="resetCalculator()">Nuevo cálculo</button>
+
+    <div id="submitArea" style="display:none; margin-top:20px; background:#f7fbf7; border:1px solid #dbe8db; border-radius:12px; padding:16px;">
+      <h3 style="margin-top:0; color:#006400;">Enviar al evento</h3>
+      <label for="nombreParticipante">Tu nombre (opcional)</label>
+      <input type="text" id="nombreParticipante" placeholder="Ej: María García" style="margin-bottom:10px;" />
+      <button id="btnEnviar" onclick="enviarHuella()">Enviar mi huella al evento</button>
+      <div id="submitMsg" style="margin-top:10px; font-size:15px;"></div>
+    </div>
+
+    <button onclick="resetCalculator()" style="margin-top:12px;">Nuevo cálculo</button>
   </div>
 
   <script>
@@ -696,7 +710,6 @@
         }
         const emissionsKg = finalDistance * factor;
 
-
         const legNumber = Math.min(footprint.tripLegs.length + 1, 99);
 
         currentLegDraft = {
@@ -929,6 +942,14 @@
           Este resultado es orientativo y simplificado. No sustituye un cálculo oficial, auditado o válido para reporting formal.
         </div>
       `;
+
+      if (eventoCode) {
+        document.getElementById("submitArea").style.display = "block";
+        document.getElementById("submitMsg").textContent = "";
+        document.getElementById("btnEnviar").disabled = false;
+        document.getElementById("btnEnviar").textContent = "Enviar mi huella al evento";
+        document.getElementById("btnEnviar").style.display = "";
+      }
     }
 
     setupAutocomplete("origenInput", "origenSuggestions", "origin");
@@ -938,6 +959,72 @@
     setTimeout(() => {
       if (map) map.invalidateSize();
     }, 100);
+
+    // Event mode: detect ?evento=CODE in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const eventoCode = urlParams.get("evento");
+
+    if (eventoCode) {
+      fetch(`/api/evento/${encodeURIComponent(eventoCode)}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.evento) {
+            document.getElementById("eventoBannerNombre").textContent =
+              `Evento: ${data.evento.nombre} (${data.evento.codigo})`;
+            document.getElementById("eventoBanner").style.display = "block";
+          }
+        })
+        .catch(() => {});
+    }
+
+    async function enviarHuella() {
+      const btn = document.getElementById("btnEnviar");
+      const msgEl = document.getElementById("submitMsg");
+      const nombre = document.getElementById("nombreParticipante").value.trim();
+
+      btn.disabled = true;
+      btn.textContent = "Enviando...";
+      msgEl.textContent = "";
+
+      const accommodationType = document.getElementById("alojamiento")?.value || "hotel-3";
+      const nights = parseInt(document.getElementById("noches")?.value, 10) || 0;
+
+      const payload = {
+        evento_codigo: eventoCode,
+        nombre: nombre || null,
+        tramos: footprint.tripLegs,
+        noches: nights,
+        categoria_hotel: accommodationType.replace("hotel-", ""),
+        emisiones_transporte_kg: footprint.mainTripKg,
+        emisiones_alojamiento_kg: footprint.accommodationKg,
+        total_kg: footprint.totalKg
+      };
+
+      try {
+        const res = await fetch("/api/participante/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          msgEl.style.color = "#065f46";
+          msgEl.textContent = "Huella enviada correctamente. Gracias por tu participacion.";
+          btn.style.display = "none";
+        } else {
+          msgEl.style.color = "#b42318";
+          msgEl.textContent = data.error || "Error al enviar la huella.";
+          btn.disabled = false;
+          btn.textContent = "Enviar mi huella al evento";
+        }
+      } catch (err) {
+        msgEl.style.color = "#b42318";
+        msgEl.textContent = "Error de red: " + err.message;
+        btn.disabled = false;
+        btn.textContent = "Enviar mi huella al evento";
+      }
+    }
   </script>
 </body>
 </html>
